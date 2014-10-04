@@ -162,9 +162,7 @@ sub listKVM {
     return \%instances;
 }
 
-
 1;
-
 
 __END__
 
