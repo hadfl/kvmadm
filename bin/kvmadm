@@ -76,7 +76,8 @@ sub main {
         last;
     };
     /^export$/ && do {
-
+        print JSON::PP->new->pretty->encode($kvmConfig->listKVM);
+        last;
     };
     /^man$/ && do {
         pod2usage(-exitstatus => 0, -verbose => 2);
