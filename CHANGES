@@ -1,0 +1,17 @@
+commit edf0d0d3565f95456cd2acb2a97b6eb9a0f63a51
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Oct 4 14:08:25 2014 +0200
+
+    - remove line feeds
+
+commit 0ca7c96d5ed4c22d994a2d7737e3a976586f0f8d
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Oct 4 13:59:27 2014 +0200
+
+    - export
+
+commit 9bf9cf9ea5a3f3865f35f5e74b77840245616e49
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Oct 4 11:16:13 2014 +0200
+
+    Initial commit
