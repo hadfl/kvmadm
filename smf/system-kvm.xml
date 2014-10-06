@@ -1,0 +1,50 @@
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<service_bundle type='manifest' name='kvm'>
+    <service
+        name='system/kvm'
+        type='service'
+        version='1'>
+
+        <dependency
+            name='network'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+            <service_fmri value='svc:/milestone/network:default' />
+        </dependency>
+        <dependency
+            name='filesystem'
+            grouping='require_all'
+            restart_on='none'
+            type='service'>
+            <service_fmri value='svc:/system/filesystem/local:default' />
+        </dependency>
+
+        <method_context>
+            <method_credential
+                user='root' />
+        </method_context>
+
+        <exec_method
+            name='start'
+            type='method'
+            exec='@prefix@/bin/system-kvm start'
+            timeout_seconds='60'/>
+        <exec_method
+            name='stop'
+            type='method'
+            exec='@prefix@/bin/system-kvm stop'
+            timeout_seconds='180'/>
+
+        <stability value='Unstable'/>
+        <template>
+            <common_name>
+                <loctext xml:lang='C'>KVM Management Facility</loctext>
+            </common_name>
+            <documentation>
+                <manpage title="kvmadm" section="1" manpath="@prefix@/share/man" />
+            </documentation>
+        </template>
+    </service>
+</service_bundle>
