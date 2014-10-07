@@ -29,12 +29,12 @@
         <exec_method
             name='start'
             type='method'
-            exec='@prefix@/bin/system-kvm start'
+            exec='@exec_prefix@/bin/system-kvm start'
             timeout_seconds='60'/>
         <exec_method
             name='stop'
             type='method'
-            exec='@prefix@/bin/system-kvm stop'
+            exec='@exec_prefix@/bin/system-kvm stop'
             timeout_seconds='180'/>
 
         <stability value='Unstable'/>
@@ -43,7 +43,7 @@
                 <loctext xml:lang='C'>KVM Management Facility</loctext>
             </common_name>
             <documentation>
-                <manpage title="kvmadm" section="1" manpath="@prefix@/share/man" />
+                <manpage title="kvmadm" section="1" manpath="@mandir@" />
             </documentation>
         </template>
     </service>
