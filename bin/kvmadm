@@ -35,6 +35,8 @@ sub editConfig {
 
 sub main {
     my $mainOpt = shift;
+    
+    defined $mainOpt or pod2usage(1);
 
     for ($mainOpt){
 
@@ -43,6 +45,7 @@ sub main {
         defined $kvmName or pod2usage(1);
 
         my $config = $kvmConfig->getTemplate;
+        $config->{hostname} = $kvmName;
         $config = editConfig($config); 
 
         $kvmConfig->createKVM($kvmName, $config);

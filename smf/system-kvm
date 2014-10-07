@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use File::Basename;
+use IO::Socket::UNIX qw(SOCK_STREAM);
 use KVMadm::Config;
 
 #SMF constants
@@ -21,23 +22,54 @@ my %SMF_STATUS = (
 );
 
 my $RUN_DIR = '/var/run/kvm';
+my $FMRI    = 'svc:/system/kvm';
 
 
+# check if FMRI is set
 $ENV{SMF_FMRI} || do {
     print "SMF framework variables are not initialised.\n";
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
 };
 
--d $RUN_DIR || mkdir $RUN_DIR;
+# check if run directory exists
+-d $RUN_DIR || mkdir $RUN_DIR || do {
+    print "Cannot create directory $RUN_DIR\n";
+    exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
+};
+
+my ($kvmName) = $ENV{SMF_FMRI} =~ /^$FMRI:(\w+)$/;
 
 for (shift){
     /^start$/ && do {
+        my $config = KVMadm::Config->new();
+        my @cmdArray;
 
+        local $@;
+        eval {
+            local $SIG{__DIE__};
+            @cmdArray = @{$config->getKVMCmdArray};
+        };
+        if($@){
+            print "$@\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
+        }
+
+        system(@cmdArray) && do {
+            print "Cannot run KVM $kvmName\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+        };
         last;
     };
 
     /^stop$/ && do {
-
+        my $sock = IO::Socket::UNIX->new(
+            Type => SOCK_STREAM,
+            Peer => $RUN_DIR . '/' . $kvmName . '.monitor',
+        ) || do {
+            print "Cannot open socket $!\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+        };
+        print $sock "system_powerdown\n";
         last;
     };
 

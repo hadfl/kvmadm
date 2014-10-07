@@ -49,7 +49,7 @@ sub fmriExists {
     my $self = shift;
     my $fmri = shift;
 
-    my @fmris = $self->listFMRI;
+    my @fmris = $self->listFMRI($fmri);
 
     return grep { $fmri eq $_ } @fmris;
 }
