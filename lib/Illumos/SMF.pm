@@ -31,7 +31,7 @@ my $refreshFMRI = sub {
 # public methods
 sub listFMRI {
     my $self = shift;
-    my $fmri = shift;
+    my $fmri = $_[0] || '*';
 
     my @cmd = ($SVCS, qw(-H -o fmri), $fmri);
 
@@ -102,6 +102,20 @@ sub addPropertyGroup {
     my @cmd = ($SVCCFG, '-s', $fmri, 'addpg', $pg, $type);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add property group to $fmri\n";
+
+    $self->$refreshFMRI($fmri);
+
+    return 1;
+}
+
+sub deletePropertyGroup {
+    my $self = shift;
+    my $fmri = shift;
+    my $pg = shift;
+
+    my @cmd = ($SVCCFG, '-s', $fmri, 'delpg', $pg);
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    system(@cmd) and die "ERROR: cannot delete property group from $fmri\n";
 
     $self->$refreshFMRI($fmri);
 
@@ -243,6 +257,10 @@ removes an FMRI from SMF
 =head2 addPropertyGroup
 
 adds a property group to a FMRI
+
+=head2 deletePropertyGroup
+
+deletes a property group from a FMRI
 
 =head2 setProperty
 
