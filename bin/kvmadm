@@ -80,7 +80,9 @@ sub main {
         last;
     };
     /^export$/ && do {
-        print JSON::PP->new->pretty->encode($kvmConfig->listKVM);
+        my $kvmName = pop @ARGV;
+
+        print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
         last;
     };
     /^man$/ && do {
@@ -123,7 +125,7 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
-    export <kvm_name>
+    export [kvm_name]
 
     help
 
