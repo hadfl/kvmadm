@@ -316,7 +316,7 @@ sub getKVMCmdArray {
 
     for my $disk (@{$config->{disks}}){
         push @cmdArray, ('-drive',
-              'file=/dev/rdsk/'   . $disk->{disk_path}
+              'file=/dev/zvol/rdsk/'   . $disk->{disk_path}
             . ',if='    . $disk->{model} // 'ide'
             . ',media=' . $disk->{media} // 'disk' 
             . ',index=' . $disk->{disk_index});
