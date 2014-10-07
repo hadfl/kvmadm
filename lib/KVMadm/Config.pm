@@ -153,7 +153,7 @@ sub checkConfig {
     for my $disk (@{$config->{disks}}){
         $section->{mandatory}->{disk_path}
             = exists $disk->{media} && $disk->{media} eq 'cdrom'
-            ? sub { return -f $_[1]; } : \&KVMadm::Utils::zvolExists;
+            ? sub { return -f $_[0]; } : \&KVMadm::Utils::zvolExists;
 
         for my $mandOpt (keys %{$section->{mandatory}}){
             exists $disk->{$mandOpt}
