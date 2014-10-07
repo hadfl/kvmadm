@@ -21,7 +21,7 @@ my %SMF_STATUS = (
     SMF_EXIT_ERR_PERM    => 100,
 );
 
-my $RUN_DIR = '/var/run/kvm';
+my $RUN_PATH = '/var/run/kvm';
 my $FMRI    = 'svc:/system/kvm';
 
 
@@ -32,8 +32,8 @@ $ENV{SMF_FMRI} || do {
 };
 
 # check if run directory exists
--d $RUN_DIR || mkdir $RUN_DIR || do {
-    print "Cannot create directory $RUN_DIR\n";
+-d $RUN_PATH || mkdir $RUN_PATH || do {
+    print "Cannot create directory $RUN_PATH\n";
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
 };
 
@@ -64,7 +64,7 @@ for (shift){
     /^stop$/ && do {
         my $sock = IO::Socket::UNIX->new(
             Type => SOCK_STREAM,
-            Peer => $RUN_DIR . '/' . $kvmName . '.monitor',
+            Peer => $RUN_PATH . '/' . $kvmName . '.monitor',
         ) || do {
             print "Cannot open socket $!\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
