@@ -10,7 +10,6 @@ use Pod::Usage;
 use File::Temp qw(tempfile);
 use JSON::PP;
 use KVMadm::Config;
-
 my $kvmConfig = KVMadm::Config->new(debug => 1);
 
 sub editConfig {
@@ -21,6 +20,8 @@ sub editConfig {
     print $fh "$configJSON\n";
     close $fh;
 
+    my $modTime = (stat $filename)[9];
+
     my $editor = $ENV{VISUAL} || $ENV{EDITOR} || '/usr/bin/vi';
     system($editor, $filename) and die "ERROR: executing editor\n";
 
@@ -30,7 +31,7 @@ sub editConfig {
         chomp $config;
         $configJSON .= "$config\n";
     }
-    return JSON::PP->new->decode($configJSON);
+    return ((stat $filename)[9] != $modTime, JSON::PP->new->decode($configJSON));
 }
 
 sub main {
@@ -46,7 +47,7 @@ sub main {
 
         my $config = $kvmConfig->getTemplate;
         $config->{hostname} = $kvmName;
-        $config = editConfig($config); 
+        (undef, $config) = editConfig($config); 
 
         $kvmConfig->createKVM($kvmName, $config);
         last; 
@@ -56,7 +57,9 @@ sub main {
         defined $kvmName or pod2usage(1);
 
         my $config = $kvmConfig->readConfig($kvmName);
-        $config = editConfig($config);
+        (my $modified, $config) = editConfig($config);
+
+        last if !$modified;
 
         $kvmConfig->writeConfig($kvmName, $config);
         last;
@@ -80,9 +83,7 @@ sub main {
         last;
     };
     /^export$/ && do {
-        my $kvmName = pop @ARGV;
-
-        print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
+        print JSON::PP->new->pretty->encode($kvmConfig->listKVM);
         last;
     };
     /^man$/ && do {
@@ -125,7 +126,7 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
-    export [kvm_name]
+    export <kvm_name>
 
     help
 
