@@ -134,7 +134,7 @@ sub checkConfig {
     
     #check options
     OPT_LBL: for my $opt (keys %$config){
-        next if $opt =~ /^(?:disks|nics)$/;
+        next if exists $kvmProperties->{sections}->{$opt};
 
         for my $mandOpt (qw(mandatory optional)){
             exists $kvmProperties->{$mandOpt}->{$opt} && do {
