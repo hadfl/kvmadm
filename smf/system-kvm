@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+
+use FindBin;
+# PERL5LIB
+use lib "$FindBin::Bin/../lib";
+use strict;
+use warnings;
+
+use File::Basename;
+use KVMadm::Config;
+
+#SMF constants
+my %SMF_STATUS = (
+    SMF_EXIT_OK          => 0,
+    SMF_EXIT_ERR_FATAL   => 95,
+    SMF_EXIT_ERR_CONFIG  => 96,
+    SMF_EXIT_MON_DEGRADE => 97,
+    SMF_EXIT_MON_OFFLINE => 98,
+    SMF_EXIT_ERR_NOSMF   => 99,
+    SMF_EXIT_ERR_PERM    => 100,
+);
+
+my $RUN_DIR = '/var/run/kvm';
+
+
+$ENV{SMF_FMRI} || do {
+    print "SMF framework variables are not initialised.\n";
+    exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+};
+
+-d $RUN_DIR || mkdir $RUN_DIR;
+
+for (shift){
+    /^start$/ && do {
+
+        last;
+    };
+
+    /^stop$/ && do {
+
+        last;
+    };
+
+    #default
+    print 'usage: ' . basename($0) . " { start | stop }\n";
+    exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+}
+
+exit $SMF_STATUS{SMF_EXIT_OK};
+
+1;
+
