@@ -271,11 +271,11 @@ sub getKVMCmdArray {
     push @cmdArray, qw(-enable-kvm -no-hpet -vga std);
     push @cmdArray, ('-m', $config->{mem} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
-    push @cmdArray, ('-smp', $config->{vcpus} // 1);
+    push @cmdArray, ('-smp', $config->{vcpus} // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
-    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // 5900) . ',console');
+    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // '5900') . ',console');
 
     for my $disk (@{$config->{disks}}){
         push @cmdArray, ('-drive',

@@ -55,9 +55,9 @@ sub writeConfig {
         if($@){
             print "$@\n\n";
             print "Do you want to retry [Y/n]? ";
-            my $check = <STDIN>;
+            chomp(my $check = <STDIN>);
 
-            $configValid = $check =~ /^n(?:o)?$/i
+            $configValid = $check =~ /^no?$/i
         }
         else{
             $configValid = 1;
