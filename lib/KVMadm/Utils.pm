@@ -7,6 +7,7 @@ use Illumos::SMF;
 
 my $FMRI = 'svc:/system/kvm';
 my $ZFS  = '/usr/sbin/zfs';
+my $DLADM = '/usr/sbin/dladm';
 
 # public methods
 sub boolean {
@@ -25,6 +26,27 @@ sub disk_model {
     return grep { $_[0] eq $_ } qw(ide virtio);
 }
 
+sub disk_path {
+    my $path = shift;
+    my $disk = shift;
+
+    if (exists $disk->{media} && $disk->{media} eq 'cdrom'){
+        -f $path || die "ERROR: cdrom image '$path' does not exist\n";
+    }
+    else{
+        $path =~ s|^/dev/zvol/rdsk/||;
+
+        -e "/dev/zvol/rdsk/$path" || do {
+            my @cmd = ($ZFS, qw(create -p -V), $disk->{disk_size},
+                $path);
+
+            print STDERR "-> zvol $path does not exist. creating it...\n";
+            system(@cmd) && die "ERROR: cannot create zvol '$path'\n";
+        };
+    }
+    return 1;
+}
+
 sub disk_media {
     return grep { $_[0] eq $_ } qw(disk cdrom);
 }
@@ -33,21 +55,39 @@ sub disk_size {
     return shift =~ /^\d+[bkmgtp]$/i;
 }
 
-sub time_base {
-    return grep { $_[0] eq $_ } qw(utc localtime);
+sub nic_tag {
+    my $nicTag = shift;
+    my $nic = shift;
+
+    my @cmd = ($DLADM, qw(show-vnic -p -o link));
+
+    open my $vnics, '-|', @cmd or die "ERROR: cannot get vnics\n";
+
+    my @vnics = <$vnics>;
+    chomp(@vnics);
+    close $vnics;
+
+    grep { $nicTag eq $_ } @vnics or do {
+        #get first physical link if over is not given
+        exists $nic->{over} || do {
+            @cmd = ($DLADM, qw(show-phys -p -o link));
+
+            open my $nics, '-|', @cmd or die "ERROR: cannot get nics\n";
+
+            chomp($nic->{over}  = <$nics>);
+            close $nics;
+        };
+             
+        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over}, $nicTag);
+        print STDERR "-> vnic '$nicTag' does not exist. creating it...\n";
+        system(@cmd) && die "ERROR: cannot create vnic '$nicTag'\n";
+    };
+
+    return 1;
 }
 
-sub zvolExists {
-    my $value = shift;
-
-    my @cmd = ($ZFS, qw(list -H -t volume -o name));
-    open my $zvols, '-|', @cmd
-        or die "ERROR: cannot list zvols\n";
-
-    my @zvols = <$zvols>;
-    chomp(@zvols);
-
-    return grep { $value eq $_ } @zvols;
+sub time_base {
+    return grep { $_[0] eq $_ } qw(utc localtime);
 }
 
 1;
@@ -84,6 +124,10 @@ checks if the argument is alphanumeric
 
 checks if the disk model is 'ide' or 'virtio'
 
+=head2 disk_path
+
+checks if a zvol/image exists, tries to create it if not
+
 =head2 disk_media
 
 checks if the disk media is 'disk' or 'cdrom'
@@ -92,17 +136,13 @@ checks if the disk media is 'disk' or 'cdrom'
 
 checks if the disk size is valid
 
+=head2 nic_tag
+
+checks if a vnic exists, tires to create it if not
+
 =head2 time_base
 
 checks if timebase is 'utc' or 'localtime'
-
-=head2 hostname_unique
-
-checks if the hostname is unique
-
-=head2 zvolExists
-
-checks if a zvol exists
 
 =head1 COPYRIGHT
 

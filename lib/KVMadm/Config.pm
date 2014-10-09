@@ -34,6 +34,7 @@ my $kvmTemplate = {
     nics        => [
         {
             nic_tag     => '',
+            over        => '',
             model       => 'virtio',
             index       => '0',
         }
@@ -54,7 +55,7 @@ my $kvmProperties = {
         disks   => {
             mandatory => {
                 model       => \&KVMadm::Utils::disk_model,
-                disk_path   => undef,
+                disk_path   => \&KVMadm::Utils::disk_path,
                 disk_size   => \&KVMadm::Utils::disk_size,
                 index       => \&KVMadm::Utils::numeric,
             },
@@ -66,10 +67,11 @@ my $kvmProperties = {
         nics    => {
             mandatory => {
                 model       => \&KVMadm::Utils::alphanumeric,
-                nic_tag     => \&KVMadm::Utils::alphanumeric,
+                nic_tag     => \&KVMadm::Utils::nic_tag,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
+                over        => \&KVMadm::Utils::alphanumeric,
                 txtimer     => \&KVMadm::Utils::numeric,
                 txburst     => \&KVMadm::Utils::numeric,
             },
@@ -125,76 +127,35 @@ sub removeKVM {
 sub checkConfig {
     my $self = shift;
     my $config = shift;
+    my $configLayout = $_[0] // $kvmProperties;
 
     #check if mandatory options are set
-    for my $mandOpt (keys %{$kvmProperties->{mandatory}}){
+    for my $mandOpt (keys %{$configLayout->{mandatory}}){
         exists $config->{$mandOpt}
             or die "ERROR: mandatory option $mandOpt not set\n";
     }
     
     #check options
     OPT_LBL: for my $opt (keys %$config){
-        next if exists $kvmProperties->{sections}->{$opt};
+        exists $configLayout->{sections}->{$opt} && do {
+            for my $item (@{$config->{$opt}}){
+                $self->checkConfig($item, $configLayout->{sections}->{$opt});
+            }
+            next OPT_LBL;
+        };
 
-        for my $mandOpt (qw(mandatory optional)){
-            exists $kvmProperties->{$mandOpt}->{$opt} && do {
-                $kvmProperties->{$mandOpt}->{$opt}->($config->{$opt})
-                    or die "ERROR: property $opt not correct. check the manual\n";
+        for my $section (qw(mandatory optional)){
+            exists $configLayout->{$section}->{$opt} && do {
+                $configLayout->{$section}->{$opt}->($config->{$opt}, $config)
+                    or die "ERROR: value '$config->{$opt}' for  property '$opt' not correct.\n";
 
                 next OPT_LBL;
             };
         }
 
-        die "ERROR: don't know the option $opt. check the manual\n";
+        die "ERROR: don't know the property '$opt'.\n";
     }
 
-    #set a reference to the disks section
-    my $section = $kvmProperties->{sections}->{disks};
-    for my $disk (@{$config->{disks}}){
-        $section->{mandatory}->{disk_path}
-            = exists $disk->{media} && $disk->{media} eq 'cdrom'
-            ? sub { return -f $_[0]; } : \&KVMadm::Utils::zvolExists;
-
-        for my $mandOpt (keys %{$section->{mandatory}}){
-            exists $disk->{$mandOpt}
-                or die "ERROR: mandatory option $mandOpt not set for disk\n";
-        }
-
-        OPT_LBL: for my $opt (keys $disk){
-            for my $mandOpt (qw(mandatory optional)){
-                exists $section->{$mandOpt}->{$opt} && do {
-                    $section->{$mandOpt}->{$opt}->($disk->{$opt})
-                        or die "ERROR: property $opt not correct. check the manual\n";
-
-                    next OPT_LBL;
-                };
-            }
-
-            die "ERROR: don't know the disk option $opt. check the manual\n";
-        }
-    }
-    
-    $section = $kvmProperties->{sections}->{nics};
-    for my $nic (@{$config->{nics}}){
-        for my $mandOpt (keys %{$section->{mandatory}}){
-            exists $nic->{$mandOpt}
-                or die "ERROR: mandatory option $mandOpt not set for nic\n";
-        }
-
-        OPT_LBL: for my $opt (keys $nic){
-            for my $mandOpt (qw(mandatory optional)){
-                $section->{$mandOpt}->{$opt} && do {
-                    $section->{$mandOpt}->{$opt}->($nic->{$opt})
-                        or die "ERROR: property $opt not correct. check the manual\n";
-
-                    next OPT_LBL;
-                };
-            }
-
-            die "ERROR: don't know the nic option $opt. check the manual\n";
-        }
-    }
-    
     return 1;
 }
 
@@ -205,9 +166,11 @@ sub writeConfig {
 
     $self->checkConfig($config);
 
-    #add property group if it does not exist
-    $smf->addPropertyGroup("$FMRI:$kvmName", $PGRP)
-        if !$smf->propertyExists("$FMRI:$kvmName", $PGRP);
+    #delete property group to wipe off existing config
+    $smf->deletePropertyGroup("$FMRI:$kvmName", $PGRP)
+        if $smf->propertyExists("$FMRI:$kvmName", $PGRP);
+
+    $smf->addPropertyGroup("$FMRI:$kvmName", $PGRP);
 
     #write disk configs
     my $counter = 0;

@@ -10,7 +10,8 @@ use Pod::Usage;
 use File::Temp qw(tempfile);
 use JSON::PP;
 use KVMadm::Config;
-my $kvmConfig = KVMadm::Config->new(debug => 1);
+
+my $kvmConfig = KVMadm::Config->new();#debug => 1);
 
 sub editConfig {
     my $config = shift;
@@ -20,7 +21,7 @@ sub editConfig {
     print $fh "$configJSON\n";
     close $fh;
 
-    my $modTime = (stat $filename)[9];
+    my $modified = (stat $filename)[9];
 
     my $editor = $ENV{VISUAL} || $ENV{EDITOR} || '/usr/bin/vi';
     system($editor, $filename) and die "ERROR: executing editor\n";
@@ -31,7 +32,37 @@ sub editConfig {
         chomp $config;
         $configJSON .= "$config\n";
     }
-    return ((stat $filename)[9] != $modTime, JSON::PP->new->decode($configJSON));
+    close $fh;
+    $modified = (stat $filename)[9] != $modified;
+    unlink $filename;
+
+    return ($modified, JSON::PP->new->decode($configJSON));
+}
+
+sub writeConfig {
+    my $kvmName = shift;
+    my $config = shift;
+    my $create = shift;
+
+    my $configValid = 0;
+
+    while(!$configValid){
+        local $@;
+        eval {
+            local $SIG{__DIE__};
+            $kvmConfig->writeConfig($kvmName, $config);
+        };
+        if($@){
+            print "$@\n\n";
+            print "Do you want to retry [Y/n]? ";
+            my $check = <STDIN>;
+
+            $configValid = $check =~ /^n(?:o)?$/i
+        }
+        else{
+            $configValid = 1;
+        }
+    }
 }
 
 sub main {
@@ -39,10 +70,11 @@ sub main {
     
     defined $mainOpt or pod2usage(1);
 
+
     for ($mainOpt){
 
     /^create$/ && do {
-        my $kvmName = pop @ARGV;
+        my $kvmName = shift @ARGV;
         defined $kvmName or pod2usage(1);
 
         my $config = $kvmConfig->getTemplate;
@@ -53,7 +85,7 @@ sub main {
         last; 
     };
     /^edit$/ && do {
-        my $kvmName = pop @ARGV;
+        my $kvmName = shift @ARGV;
         defined $kvmName or pod2usage(1);
 
         my $config = $kvmConfig->readConfig($kvmName);
@@ -65,14 +97,14 @@ sub main {
         last;
     };
     /^delete$/ && do {
-        my $kvmName = pop @ARGV;
+        my $kvmName = shift @ARGV;
         defined $kvmName or pod2usage(1);
 
         $kvmConfig->removeKVM($kvmName);
         last;
     };
     /^list$/ && do {
-        my $kvmName = pop @ARGV;
+        my $kvmName = shift @ARGV;
 
         my $kvmConf = $kvmConfig->listKVM($kvmName);
         for my $key (keys %$kvmConf){
@@ -83,7 +115,7 @@ sub main {
         last;
     };
     /^export$/ && do {
-        my $kvmName = pop @ARGV;
+        my $kvmName = shift @ARGV;
 
         print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
         last;
@@ -143,6 +175,8 @@ Use kvmadm to create/edit your KVMs under SMF control
 =head2 B<delete>
 
 =head2 B<edit>
+
+=head2 B<list>
 
 =head2 B<export>
 
