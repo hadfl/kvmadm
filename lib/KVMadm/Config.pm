@@ -167,6 +167,8 @@ sub writeConfig {
         if $smf->propertyExists("$FMRI:$kvmName", $PGRP);
 
     $smf->addPropertyGroup("$FMRI:$kvmName", $PGRP);
+    
+    $smf->refreshFMRI("$FMRI:$kvmName");
 
     #write disk configs
     my $counter = 0;
@@ -190,6 +192,8 @@ sub writeConfig {
     %$config = (map { $PGRP . '/' . $_ => $config->{$_} } keys %$config);
     $smf->setProperties("$FMRI:$kvmName", $config);
 
+    $smf->refreshFMRI("$FMRI:$kvmName");
+
     return 1;
 }
 
@@ -200,6 +204,7 @@ sub readConfig {
     my $config = {};
     
     $smf->fmriExists("$FMRI:$kvmName") or die "ERROR: KVM instance '$kvmName' does not exist\n";
+
     my $properties = $smf->getProperties("$FMRI:$kvmName", $PGRP);
 
     for my $prop (keys %$properties){
