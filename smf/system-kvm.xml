@@ -36,6 +36,11 @@
             type='method'
             exec='@exec_prefix@/bin/system-kvm stop'
             timeout_seconds='180'/>
+        <exec_method
+            name='refresh'
+            type='method'
+            exec=':true'
+            timeout_seconds='60'/>
 
         <stability value='Unstable'/>
         <template>
