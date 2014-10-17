@@ -28,9 +28,8 @@ sub editConfig {
     my $editor = $ENV{VISUAL} || $ENV{EDITOR} || '/usr/bin/vi';
     system($editor, $filename) and die "ERROR: executing editor\n";
 
-    $configJSON = '';
     open $fh, '<', $filename or die "ERROR: cannot open temp file $filename: $!\n";
-    my $configJSON = do { local $/; <$fh>; };
+    $configJSON = do { local $/; <$fh>; };
     close $fh;
 
     $modified = (stat $filename)[9] != $modified;
