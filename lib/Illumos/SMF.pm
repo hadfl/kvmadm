@@ -49,7 +49,7 @@ sub fmriExists {
     my $self = shift;
     my $fmri = shift;
 
-    my @fmris = $self->listFMRI($fmri);
+    my @fmris = $self->listFMRI();
 
     return grep { $fmri eq $_ } @fmris;
 }
@@ -198,7 +198,7 @@ sub getProperties {
     open my $props, '-|', @cmd
         or die "ERROR: cannot get properties of FMRI\n";
 
-    while(my $prop = <$props>){
+    while (my $prop = <$props>){
         chomp $prop;
         my ($name, $type, $value) = split /\s+/, $prop, 3;
         $properties->{$name} = $value;

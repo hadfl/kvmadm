@@ -22,6 +22,7 @@ my $kvmTemplate = {
     ram         => 1024,
     vnc_port    => 5090,
     time_base   => 'utc',
+    boot_order  => 'cd',
     disks       => [
         {
             boot        => 'true',
@@ -43,25 +44,25 @@ my $kvmTemplate = {
 
 my $kvmProperties = {
     mandatory => {
-        hostname    => \&KVMadm::Utils::alphanumeric,
         vnc_port    => \&KVMadm::Utils::numeric,
     },
     optional  => {
         vcpus       => \&KVMadm::Utils::numeric,
         ram         => \&KVMadm::Utils::numeric,
         time_base   => \&KVMadm::Utils::time_base,
+        boot_order  => \&KVMadm::Utils::alphanumeric,
     },
     sections  => {
         disks   => {
             mandatory => {
                 model       => \&KVMadm::Utils::disk_model,
                 disk_path   => \&KVMadm::Utils::disk_path,
-                disk_size   => \&KVMadm::Utils::disk_size,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
                 boot        => \&KVMadm::Utils::boolean,
                 media       => \&KVMadm::Utils::disk_media,
+                disk_size   => \&KVMadm::Utils::disk_size,
             },
         },
         nics    => {
@@ -106,15 +107,6 @@ sub new {
 # public methods
 sub getTemplate {
     return $kvmTemplate;
-}
-
-sub createKVM {
-    my $self = shift;
-    my $kvmName = shift;
-    my $config = shift;
-
-    $smf->addInstance($FMRI, $kvmName);
-    $self->writeConfig($kvmName, $config);
 }
 
 sub removeKVM {
@@ -165,6 +157,10 @@ sub writeConfig {
     my $config = shift;
 
     $self->checkConfig($config);
+    
+    #create instance if it does not exist
+    $smf->addInstance($FMRI, $kvmName)
+        if !$smf->fmriExists("$FMRI:$kvmName");
 
     #delete property group to wipe off existing config
     $smf->deletePropertyGroup("$FMRI:$kvmName", $PGRP)
@@ -203,6 +199,7 @@ sub readConfig {
 
     my $config = {};
     
+    $smf->fmriExists("$FMRI:$kvmName") or die "ERROR: KVM instance '$kvmName' does not exist\n";
     my $properties = $smf->getProperties("$FMRI:$kvmName", $PGRP);
 
     for my $prop (keys %$properties){
@@ -210,7 +207,7 @@ sub readConfig {
         $prop =~ s|^$PGRP/||;
 
         for ($prop){
-            /disk(\d+)_(.+)$/ && do {
+            /^disk(\d+)_(.+)$/ && do {
                 my $index = $1;
                 my $key   = $2;
 
@@ -223,7 +220,7 @@ sub readConfig {
                 last;
             };
             
-            /nic(\d+)_(.+)$/ && do {
+            /^nic(\d+)_(.+)$/ && do {
                 my $index = $1;
                 my $key   = $2;
 
@@ -265,25 +262,32 @@ sub getKVMCmdArray {
     my $kvmName = shift;
 
     my $config = $self->readConfig($kvmName);
-    my @cmdArray = ($QEMU_KVM);
+    $self->checkConfig($config);
 
+    my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
     push @cmdArray, qw(-enable-kvm -no-hpet -vga std);
-    push @cmdArray, ('-m', $config->{mem} // '1024');
+    push @cmdArray, ('-m', $config->{ram} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
-    push @cmdArray, ('-smp', $config->{vcpus} // 1);
+    push @cmdArray, ('-smp', $config->{vcpus} // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
-    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // 5900) . ',console');
+    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // '0') . ',console');
 
     for my $disk (@{$config->{disks}}){
+        $disk->{disk_path} = '/dev/zvol/rdsk/' . $disk->{disk_path}
+            if (!exists $disk->{media} || $disk->{media} ne 'cdrom')
+                && $disk->{disk_path} !~ m|^/dev/zvol/rdsk/|;
+
         push @cmdArray, ('-drive',
-              'file=/dev/zvol/rdsk/'   . $disk->{disk_path}
-            . ',if='    . $disk->{model} // 'ide'
-            . ',media=' . $disk->{media} // 'disk' 
-            . ',index=' . $disk->{disk_index});
+              'file='   . $disk->{disk_path}
+            . ',if='    . ($disk->{model} // 'ide')
+            . ',media=' . ($disk->{media} // 'disk')
+            . ',index=' . $disk->{index}
+            . ($disk->{boot} ? ',boot=on' : ''));
     }
+    push @cmdArray, ('-boot', 'order=' . ($config->{boot_order} ? $config->{boot_order} : 'cd'));
 
     for my $nic (@{$config->{nics}}){
         my $mac = $getMAC->($nic->{nic_tag});
@@ -293,17 +297,17 @@ sub getKVMCmdArray {
                   'virtio-net-pci'
                 . ',mac=' . $mac
                 . ',tx=timer'
-                . ',x-txtimer=' . $nic->{txtimer} // $VIRTIO_TXTIMER_DEFAULT
-                . ',x-txburst=' . $nic->{txburst} // $VIRTIO_TXBURST_DEFAULT
-                . ',vlan=0');
+                . ',x-txtimer=' . ($nic->{txtimer} // $VIRTIO_TXTIMER_DEFAULT)
+                . ',x-txburst=' . ($nic->{txburst} // $VIRTIO_TXBURST_DEFAULT)
+                . ',vlan=' . $nic->{index});
         }
         else{
-            push @cmdArray, ('-net', 'nic,vlan=0,name=net0,model='
-                . $nic->{model} . ',macaddr=' . $mac);
+            push @cmdArray, ('-net', 'nic,vlan=' . $nic->{index} . ',name='
+                . $nic->{nic_tag} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
         }
 
-        push @cmdArray, ('-net', 'vnic,vlan=0,name=net0,ifname='
-            . $nic->{nic_tag} . ',macaddr=' . $mac);
+        push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
+            . $nic->{nic_tag} . ',ifname=' . $nic->{nic_tag});
     }
 
     push @cmdArray, qw(-daemonize);
@@ -337,10 +341,6 @@ reads and writes kvmadm configuration
 print debug information to STDERR
 
 =head1 METHODS
-
-=head2 createKVM
-
-creates a new KVM instance in SMF
 
 =head2 removeKVM
 

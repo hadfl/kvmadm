@@ -47,7 +47,7 @@ for (shift){
         local $@;
         eval {
             local $SIG{__DIE__};
-            @cmdArray = @{$config->getKVMCmdArray};
+            @cmdArray = @{$config->getKVMCmdArray($kvmName)};
         };
         if($@){
             print "$@\n";

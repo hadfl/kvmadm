@@ -6,12 +6,14 @@ use lib "$FindBin::Bin/../lib";
 use strict;
 use warnings;
 
+use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
 use File::Temp qw(tempfile);
 use JSON::PP;
 use KVMadm::Config;
 
-my $kvmConfig = KVMadm::Config->new();#debug => 1);
+my $opts = {};
+my $kvmConfig;
 
 sub editConfig {
     my $config = shift;
@@ -27,7 +29,7 @@ sub editConfig {
     system($editor, $filename) and die "ERROR: executing editor\n";
 
     $configJSON = '';
-    open $fh, "<$filename" or die "ERROR: cannot open temp file $filename\n";
+    open $fh, "<$filename" or die "ERROR: cannot open temp file $filename: $!\n";
     while (my $config = <$fh>){
         chomp $config;
         $configJSON .= "$config\n";
@@ -42,22 +44,25 @@ sub editConfig {
 sub writeConfig {
     my $kvmName = shift;
     my $config = shift;
-    my $create = shift;
 
     my $configValid = 0;
 
-    while(!$configValid){
+    while (!$configValid){
         local $@;
         eval {
             local $SIG{__DIE__};
+            (my $modified, $config) = editConfig($config);
+
+            return if !$modified;
+
             $kvmConfig->writeConfig($kvmName, $config);
         };
-        if($@){
-            print "$@\n\n";
+        if ($@){
+            print "$@\n";
             print "Do you want to retry [Y/n]? ";
-            my $check = <STDIN>;
+            chomp(my $check = <STDIN>);
 
-            $configValid = $check =~ /^n(?:o)?$/i
+            $configValid = $check =~ /^no?$/i
         }
         else{
             $configValid = 1;
@@ -67,21 +72,38 @@ sub writeConfig {
 
 sub main {
     my $mainOpt = shift;
-    
     defined $mainOpt or pod2usage(1);
 
+    GetOptions($opts, qw(debug|d f=s)) or exit 1;
+    $kvmConfig = KVMadm::Config->new(debug => $opts->{debug});
 
     for ($mainOpt){
 
     /^create$/ && do {
-        my $kvmName = shift @ARGV;
-        defined $kvmName or pod2usage(1);
+        my $kvmName;
+        my $config;
 
-        my $config = $kvmConfig->getTemplate;
-        $config->{hostname} = $kvmName;
-        (undef, $config) = editConfig($config); 
+        if ($opts->{f}){
+            -f $opts->{f} or die 'ERROR: file ' . $opts->{f} . " does not exist\n";
 
-        $kvmConfig->createKVM($kvmName, $config);
+            open my $fh, '<', $opts->{f} or die 'ERROR: cannot open file ' . $opts->{f} . ":$!\n";
+            my $configJSON = do { local $/; <$fh>; };
+            close $fh;
+
+            $config = JSON::PP->new->decode($configJSON);
+
+            for my $kvm (keys %$config){
+                writeConfig($kvm, $config->{$kvm});
+            }
+        }
+        else{
+            $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+            $config = $kvmConfig->getTemplate;
+
+            writeConfig($kvmName, $config);
+        }
+        
         last; 
     };
     /^edit$/ && do {
@@ -89,11 +111,8 @@ sub main {
         defined $kvmName or pod2usage(1);
 
         my $config = $kvmConfig->readConfig($kvmName);
-        (my $modified, $config) = editConfig($config);
+        writeConfig($kvmName, $config);
 
-        last if !$modified;
-
-        $kvmConfig->writeConfig($kvmName, $config);
         last;
     };
     /^delete$/ && do {
@@ -104,17 +123,6 @@ sub main {
         last;
     };
     /^list$/ && do {
-        my $kvmName = shift @ARGV;
-
-        my $kvmConf = $kvmConfig->listKVM($kvmName);
-        for my $key (keys %$kvmConf){
-            print "*** $key ***\n";
-            print JSON::PP->new->pretty->encode($kvmConf->{$key});
-            print "\n";
-        }
-        last;
-    };
-    /^export$/ && do {
         my $kvmName = shift @ARGV;
 
         print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
@@ -152,15 +160,13 @@ B<kvmadm> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [-f <file>] <kvm_name>
+    create [-f <filename>] <kvm_name>
 
     delete <kvm_name>
 
     edit   <kvm_name>
 
     list [kvm_name]
-
-    export [kvm_name]
 
     help
 
