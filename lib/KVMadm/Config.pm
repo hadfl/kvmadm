@@ -37,6 +37,7 @@ my $kvmTemplate = {
             nic_tag     => '',
             over        => '',
             model       => 'virtio',
+            index       => '0',
         }
     ],
 };
@@ -56,18 +57,19 @@ my $kvmProperties = {
             mandatory => {
                 model       => \&KVMadm::Utils::disk_model,
                 disk_path   => \&KVMadm::Utils::disk_path,
-                disk_size   => \&KVMadm::Utils::disk_size,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
                 boot        => \&KVMadm::Utils::boolean,
                 media       => \&KVMadm::Utils::disk_media,
+                disk_size   => \&KVMadm::Utils::disk_size,
             },
         },
         nics    => {
             mandatory => {
                 model       => \&KVMadm::Utils::alphanumeric,
                 nic_tag     => \&KVMadm::Utils::nic_tag,
+                index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
                 over        => \&KVMadm::Utils::alphanumeric,
@@ -265,17 +267,21 @@ sub getKVMCmdArray {
     my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
     push @cmdArray, qw(-enable-kvm -no-hpet -vga std);
-    push @cmdArray, ('-m', $config->{mem} // '1024');
+    push @cmdArray, ('-m', $config->{ram} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
     push @cmdArray, ('-smp', $config->{vcpus} // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
-    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // '5900') . ',console');
+    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // '0') . ',console');
 
     for my $disk (@{$config->{disks}}){
+        $disk->{disk_path} = '/dev/zvol/rdsk/' . $disk->{disk_path}
+            if (!exists $disk->{media} || $disk->{media} ne 'cdrom')
+                && $disk->{disk_path} !~ m|^/dev/zvol/rdsk/|;
+
         push @cmdArray, ('-drive',
-              'file=/dev/zvol/rdsk/'   . $disk->{disk_path}
+              'file='   . $disk->{disk_path}
             . ',if='    . ($disk->{model} // 'ide')
             . ',media=' . ($disk->{media} // 'disk')
             . ',index=' . $disk->{index}
@@ -293,15 +299,15 @@ sub getKVMCmdArray {
                 . ',tx=timer'
                 . ',x-txtimer=' . ($nic->{txtimer} // $VIRTIO_TXTIMER_DEFAULT)
                 . ',x-txburst=' . ($nic->{txburst} // $VIRTIO_TXBURST_DEFAULT)
-                . ',vlan=0');
+                . ',vlan=' . $nic->{index});
         }
         else{
-            push @cmdArray, ('-net', 'nic,vlan=0,name=net0,model='
-                . $nic->{model} . ',macaddr=' . $mac);
+            push @cmdArray, ('-net', 'nic,vlan=' . $nic->{index} . ',name='
+                . $nic->{nic_tag} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
         }
 
-        push @cmdArray, ('-net', 'vnic,vlan=0,name=net0,ifname='
-            . $nic->{nic_tag});
+        push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
+            . $nic->{nic_tag} . ',ifname=' . $nic->{nic_tag});
     }
 
     push @cmdArray, qw(-daemonize);

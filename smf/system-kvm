@@ -54,10 +54,6 @@ for (shift){
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
 
-### TESTING
-        print join("\n", @cmdArray);
-        exit $SMF_STATUS{SMF_EXIT_OK};
-### TESTING END
         system(@cmdArray) && do {
             print "Cannot run KVM $kvmName\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};

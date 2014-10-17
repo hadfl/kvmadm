@@ -37,7 +37,7 @@ sub disk_path {
         $path =~ s|^/dev/zvol/rdsk/||;
 
         -e "/dev/zvol/rdsk/$path" || do {
-            my @cmd = ($ZFS, qw(create -p -V), $disk->{disk_size},
+            my @cmd = ($ZFS, qw(create -p -V), ($disk->{disk_size} // '10G'),
                 $path);
 
             print STDERR "-> zvol $path does not exist. creating it...\n";
