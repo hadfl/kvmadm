@@ -1,0 +1,67 @@
+=head1 NAME
+
+kvmadm - Manage KVMs under SMF control
+
+=head1 SYNOPSIS
+
+B<kvmadm> I<command> [I<options...>]
+
+where 'command' is one of the following:
+
+    create [-f <file>] <kvm_name>
+
+    delete <kvm_name>
+
+    edit   <kvm_name>
+
+    list [kvm_name]
+
+    export <kvm_name>
+
+    help
+
+    man
+
+=head1 DESCRIPTION
+
+Use kvmadm to create/edit your KVMs under SMF control
+
+=head2 B<create>
+
+=head2 B<delete>
+
+=head2 B<edit>
+
+=head2 B<export>
+
+=head1 EXAMPLES
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
+
+=head1 HISTORY
+
+2014-10-03 had Initial Version
+
+=cut

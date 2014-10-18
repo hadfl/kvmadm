@@ -78,66 +78,65 @@ sub main {
     $kvmConfig = KVMadm::Config->new(debug => $opts->{debug});
 
     for ($mainOpt){
+        /^create$/ && do {
+            my $kvmName;
+            my $config;
 
-    /^create$/ && do {
-        my $kvmName;
-        my $config;
+            if ($opts->{f}){
+                -f $opts->{f} or die 'ERROR: file ' . $opts->{f} . " does not exist\n";
 
-        if ($opts->{f}){
-            -f $opts->{f} or die 'ERROR: file ' . $opts->{f} . " does not exist\n";
+                open my $fh, '<', $opts->{f} or die 'ERROR: open file ' . $opts->{f} . ":$!\n";
+                my $configJSON = do { local $/; <$fh>; };
+                close $fh;
 
-            open my $fh, '<', $opts->{f} or die 'ERROR: cannot open file ' . $opts->{f} . ":$!\n";
-            my $configJSON = do { local $/; <$fh>; };
-            close $fh;
+                $config = JSON::PP->new->decode($configJSON);
 
-            $config = JSON::PP->new->decode($configJSON);
-
-            for my $kvm (keys %$config){
-                writeConfig($kvm, $config->{$kvm});
+                for my $kvm (keys %$config){
+                    writeConfig($kvm, $config->{$kvm});
+                }
             }
-        }
-        else{
-            $kvmName = shift @ARGV;
+            else {
+                $kvmName = shift @ARGV;
+                defined $kvmName or pod2usage(1);
+                $config = $kvmConfig->getTemplate;
+
+                writeConfig($kvmName, $config);
+            }
+            
+            last; 
+        };
+        /^edit$/ && do {
+            my $kvmName = shift @ARGV;
             defined $kvmName or pod2usage(1);
-            $config = $kvmConfig->getTemplate;
 
+            my $config = $kvmConfig->readConfig($kvmName);
             writeConfig($kvmName, $config);
-        }
-        
-        last; 
-    };
-    /^edit$/ && do {
-        my $kvmName = shift @ARGV;
-        defined $kvmName or pod2usage(1);
 
-        my $config = $kvmConfig->readConfig($kvmName);
-        writeConfig($kvmName, $config);
+            last;
+        };
+        /^delete$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
 
-        last;
-    };
-    /^delete$/ && do {
-        my $kvmName = shift @ARGV;
-        defined $kvmName or pod2usage(1);
+            $kvmConfig->removeKVM($kvmName);
+            last;
+        };
+        /^list$/ && do {
+            my $kvmName = shift @ARGV;
 
-        $kvmConfig->removeKVM($kvmName);
-        last;
-    };
-    /^list$/ && do {
-        my $kvmName = shift @ARGV;
+            print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
+            last;
+        };
+        /^man$/ && do {
+            pod2usage(-exitstatus => 0, -verbose => 2);
 
-        print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
-        last;
-    };
-    /^man$/ && do {
-        pod2usage(-exitstatus => 0, -verbose => 2);
+            last;
+        };
+        /^help$/ && do {
+            pod2usage(-exitval => 'NOEXIT');
 
-        last;
-    };
-    /^help$/ && do {
-        pod2usage(-exitval => 'NOEXIT');
-
-        last;
-    };
+            last;
+        };
         #main argument invalid
         pod2usage(1);
     }

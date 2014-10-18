@@ -587,8 +587,7 @@ PACKAGE_URL=''
 ac_default_prefix=/opt/$PACKAGE_NAME-$PACKAGE_VERSION
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-PERL5LIB
-enable_pkgonly
+SVCIMPORT
 GMAKE
 POD2MAN
 PERL
@@ -665,14 +664,13 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_maintainer_mode
-enable_pkgonly
+enable_svcimport
 '
       ac_precious_vars='build_alias
 host_alias
 target_alias
 PERL
-GMAKE
-PERL5LIB'
+GMAKE'
 
 
 # Initialize some variables set by options.
@@ -1292,12 +1290,11 @@ Optional Features:
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
-  --enable-pkgonly        Skip all checking
+  --disable-svcimport     do NOT import the system-kvm.xml manifest
 
 Some influential environment variables:
   PERL        Path to local perl binary
   GMAKE       Path to local GNU Make binary
-  PERL5LIB    Colon separated list of perl library directories
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2693,22 +2690,23 @@ else
     as_fn_error $? "GNU make not found. Try setting the GMAKE environment variable." "$LINENO" 5
 fi
 
+SVCIMPORT=yes
+# Check whether --enable-svcimport was given.
+if test "${enable_svcimport+set}" = set; then :
+  enableval=$enable_svcimport; SVCIMPORT=$enableval
+else
+  SVCINPORT=yes
+
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking the price for bergulian eckels" >&5
 $as_echo_n "checking the price for bergulian eckels... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: way to expensive!" >&5
 $as_echo "way to expensive!" >&6; }
 
-# Check whether --enable-pkgonly was given.
-if test "${enable_pkgonly+set}" = set; then :
-  enableval=$enable_pkgonly;
-fi
-
-
-
-
-
-
-ac_config_files="$ac_config_files Makefile lib/Makefile"
+ac_config_files="$ac_config_files Makefile lib/Makefile smf/system-kvm.xml"
 
 
 
@@ -3436,6 +3434,7 @@ do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
+    "smf/system-kvm.xml") CONFIG_FILES="$CONFIG_FILES smf/system-kvm.xml" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -3903,7 +3902,6 @@ cat <<NOTES
 
    Settings:
 
-     PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
 
    Note that the Makefiles uses GNU make functionality.

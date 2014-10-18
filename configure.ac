@@ -51,20 +51,24 @@ else
     AC_MSG_ERROR([GNU make not found. Try setting the GMAKE environment variable.])
 fi
 
+SVCIMPORT=yes
+AC_ARG_ENABLE(svcimport,
+        AC_HELP_STRING(
+                [--disable-svcimport],
+                [do NOT import the system-kvm.xml manifest]
+        ),
+        [SVCIMPORT=$enableval],
+        [SVCINPORT=yes]
+)
+AC_SUBST(SVCIMPORT)
+                                                                
 AC_MSG_CHECKING(the price for bergulian eckels)
 AC_MSG_RESULT(way to expensive!)
 
-AC_ARG_ENABLE(pkgonly,
-        AC_HELP_STRING([--enable-pkgonly],
-                        [Skip all checking]))
-AC_SUBST(enable_pkgonly)
-
-AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
-AC_SUBST(PERL5LIB)
-                                                                                                                       
 AC_CONFIG_FILES([
 	Makefile
 	lib/Makefile
+        smf/system-kvm.xml
 ])
 
 AC_SUBST(VERSION)
@@ -77,7 +81,6 @@ cat <<NOTES
    
    Settings:
 
-     PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
      
    Note that the Makefiles uses GNU make functionality.

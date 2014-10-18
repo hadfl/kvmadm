@@ -96,8 +96,9 @@ POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(dist_bin_SCRIPTS) AUTHORS conftools/install-sh \
-	conftools/missing $(top_srcdir)/conftools/install-sh \
+	$(top_srcdir)/smf/system-kvm.xml.in $(dist_bin_SCRIPTS) \
+	AUTHORS conftools/install-sh conftools/missing \
+	$(top_srcdir)/conftools/install-sh \
 	$(top_srcdir)/conftools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -106,7 +107,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = smf/system-kvm.xml
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -135,7 +136,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" \
+	"$(DESTDIR)$(svcdir)"
 SCRIPTS = $(dist_bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -166,7 +168,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-DATA = $(iman_DATA)
+DATA = $(iman_DATA) $(svc_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -271,11 +273,11 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
-PERL5LIB = @PERL5LIB@
 POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SVCIMPORT = @SVCIMPORT@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -291,7 +293,6 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
-enable_pkgonly = @enable_pkgonly@
 exec_prefix = @exec_prefix@
 host_alias = @host_alias@
 htmldir = @htmldir@
@@ -320,7 +321,7 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 SUFFIXES = .1 .man .pm
 SUBDIRS = lib
-BIN = bin/@PACKAGE@
+BIN = bin/@PACKAGE@ bin/system-kvm
 PM := $(shell find lib/ -name "*.pm")
 MAN = man/kvmadm.1 
 POD = doc/kvmadm.pod
@@ -331,6 +332,8 @@ DATE := $(shell date +%Y-%m-%d)
 dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
+svcdir = $(pkgdatadir)/smf
+svc_DATA = smf/system-kvm.xml
 all: all-recursive
 
 .SUFFIXES:
@@ -369,6 +372,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+smf/system-kvm.xml: $(top_builddir)/config.status $(top_srcdir)/smf/system-kvm.xml.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -425,6 +430,27 @@ uninstall-imanDATA:
 	@list='$(iman_DATA)'; test -n "$(imandir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(imandir)'; $(am__uninstall_files_from_dir)
+install-svcDATA: $(svc_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(svc_DATA)'; test -n "$(svcdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(svcdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(svcdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(svcdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(svcdir)" || exit $$?; \
+	done
+
+uninstall-svcDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(svc_DATA)'; test -n "$(svcdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(svcdir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -728,7 +754,7 @@ check: check-recursive
 all-am: Makefile $(SCRIPTS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(svcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -782,7 +808,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-imanDATA
+install-data-am: install-imanDATA install-svcDATA
 
 install-dvi: install-dvi-recursive
 
@@ -829,7 +855,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA
+uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
+	uninstall-svcDATA
 
 .MAKE: $(am__recursive_targets) install-am install-exec-am \
 	install-strip
@@ -845,11 +872,12 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA
 	install-dvi-am install-exec install-exec-am install-exec-hook \
 	install-html install-html-am install-imanDATA install-info \
 	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-dist_binSCRIPTS uninstall-imanDATA
+	install-ps install-ps-am install-strip install-svcDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-dist_binSCRIPTS uninstall-imanDATA \
+	uninstall-svcDATA
 
 
 doc/%.pod: bin/% configure
@@ -865,8 +893,8 @@ CHANGES: configure
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
 
 install-exec-hook:
-	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	if [ "x$(SVCIMPORT)" = "xyes" ]; then svccfg import $(datadir)/smf/system-kvm.xml; fi
 
 dist-hook: $(POD) $(MAN) CHANGES
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
