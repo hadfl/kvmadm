@@ -29,7 +29,7 @@ make install
 
 By default this will also install the kvmadm smf manifest in
 ```/var/svc/manifest/site``` you can disable this behavior by calling
-configure with ```--disable-svcinstall``` 
+configure with ```--disable-svcimport``` 
 
 Support and Contributions
 -------------------------
