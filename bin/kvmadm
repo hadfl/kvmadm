@@ -28,13 +28,10 @@ sub editConfig {
     my $editor = $ENV{VISUAL} || $ENV{EDITOR} || '/usr/bin/vi';
     system($editor, $filename) and die "ERROR: executing editor\n";
 
-    $configJSON = '';
-    open $fh, "<$filename" or die "ERROR: cannot open temp file $filename: $!\n";
-    while (my $config = <$fh>){
-        chomp $config;
-        $configJSON .= "$config\n";
-    }
+    open $fh, '<', $filename or die "ERROR: cannot open temp file $filename: $!\n";
+    $configJSON = do { local $/; <$fh>; };
     close $fh;
+
     $modified = (stat $filename)[9] != $modified;
     unlink $filename;
 
@@ -89,7 +86,10 @@ sub main {
                 my $configJSON = do { local $/; <$fh>; };
                 close $fh;
 
+<<<<<<< HEAD
                 $config = JSON::PP->new->decode($configJSON);
+=======
+>>>>>>> code_cleanup
 
                 for my $kvm (keys %$config){
                     writeConfig($kvm, $config->{$kvm});
@@ -182,8 +182,6 @@ Use kvmadm to create/edit your KVMs under SMF control
 =head2 B<edit>
 
 =head2 B<list>
-
-=head2 B<export>
 
 =head1 EXAMPLES
 

@@ -16,8 +16,8 @@ sub new {
     return bless $self, $class
 }
 
-# private methods
-my $refreshFMRI = sub {
+# public methods
+sub refreshFMRI {
     my $self = shift;
     my $fmri = shift;
 
@@ -26,9 +26,8 @@ my $refreshFMRI = sub {
     system(@cmd) and die "ERROR: cannot refresh FMRI '$fmri'\n";
     
     return 1;
-};
+}
 
-# public methods
 sub listFMRI {
     my $self = shift;
     my $fmri = $_[0] || '*';
@@ -77,8 +76,6 @@ sub addInstance {
     $self->setProperty("$fmri:$instance", 'general/complete', $instance);
     $self->setProperty("$fmri:$instance", 'general/enabled', 'false');
 
-    $self->$refreshFMRI("$fmri:$instance");
-
     return 1;
 }
 
@@ -103,8 +100,6 @@ sub addPropertyGroup {
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add property group to $fmri\n";
 
-    $self->$refreshFMRI($fmri);
-
     return 1;
 }
 
@@ -116,8 +111,6 @@ sub deletePropertyGroup {
     my @cmd = ($SVCCFG, '-s', $fmri, 'delpg', $pg);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot delete property group from $fmri\n";
-
-    $self->$refreshFMRI($fmri);
 
     return 1;
 }
@@ -149,8 +142,6 @@ sub setProperty {
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot set property $property of $fmri\n";
 
-    $self->$refreshFMRI($fmri);
-
     return 1;
 }
 
@@ -162,8 +153,6 @@ sub setProperties {
     for my $key (keys %$properties){
         $self->setProperty($fmri, $key, $properties->{$key})
     }
-
-    $self->$refreshFMRI($fmri);
 
     return 1;
 }
@@ -233,6 +222,10 @@ object to manage SMF
 print debug information to STDERR
 
 =head1 METHODS
+
+=head2 refreshFMRI
+
+refreshs the instance
 
 =head2 listFMRI
 
