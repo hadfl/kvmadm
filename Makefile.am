@@ -20,7 +20,7 @@ SUFFIXES = .1 .man .pm
 
 SUBDIRS = lib
 
-BIN = bin/@PACKAGE@
+BIN = bin/@PACKAGE@ bin/system-kvm
 
 PM :=  $(shell find lib/ -name "*.pm")
 
@@ -38,6 +38,9 @@ dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
 
+svcdir = $(pkgdatadir)/smf
+svc_DATA = smf/system-kvm.xml
+
 doc/%.pod: bin/% configure
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
         
@@ -51,8 +54,8 @@ CHANGES: configure
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
 	
 install-exec-hook:
-	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	if [ "x$(SVCIMPORT)" = "xyes" ]; then svccfg import $(datadir)/smf/system-kvm.xml; fi
 
 dist-hook: $(POD) $(MAN) CHANGES
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)

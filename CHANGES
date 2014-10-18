@@ -1,3 +1,123 @@
+commit bbd097b015b2c0ca13838d50eb2314a934ef8140
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Oct 17 13:23:54 2014 +0200
+
+    - bugfix: missing brackets
+
+commit 08c120b79ca93a37f48b3907832e36eba4c9df93
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Oct 17 13:06:21 2014 +0200
+
+    - ready for v0.1
+
+commit 2bafb239eacacc47147d776b11be94d551fa8bb0
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Oct 15 09:57:59 2014 +0200
+
+    - bugfixes
+
+commit c83427e7c66f652e8033c01b036e60d7ff0915f3
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Oct 9 15:18:20 2014 +0200
+
+    - chomp user input
+
+commit 4dc078cc64da1dc71e74052fe6874d1f281b2b4c
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 19:58:48 2014 +0200
+
+    - check config implemented
+
+commit d6426b04616d7dc761b7d1ff6b02d7ed085bf98e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 19:36:52 2014 +0200
+
+    - cosmetics
+
+commit b4b9fa4a0e326952349877cb9351b9c0360f15df
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 19:32:57 2014 +0200
+
+    - export
+
+commit 636ab232029992548aac94881fd78535f4949bbf
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 19:30:45 2014 +0200
+
+    - check if config was edited
+
+commit 50a538f642eb85b54cc50ae91feac110f1aa7c46
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 16:53:19 2014 +0200
+
+    - export all or a specific kvm config
+
+commit da2804cd880d953202ccbe33f535eb8e354b28a3
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 16:46:12 2014 +0200
+
+    - typo
+
+commit b34c1636a09f5562f74be1b4e9a40e3e621dd0df
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 16:28:17 2014 +0200
+
+    - no need for a regex
+
+commit 8f23a6c21c4f0476abf84078b12644b987a85343
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 16:21:12 2014 +0200
+
+    - fix index
+
+commit 2bb0c89be5c3021d4f6a150d8387bb5d345bb512
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 16:08:34 2014 +0200
+
+    - baseline
+
+commit 1c354f3830dfc01191834933a7a117160a82322a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Oct 6 20:10:20 2014 +0200
+
+    - fixing manifest
+
+commit 83c83a78a86037f0959087ea4bf37ffa76502139
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 7 06:29:34 2014 +0200
+
+    - system-kvm added
+
+commit 5fa7c384a83d58881e71772472e1d8167e72228e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Oct 6 11:10:57 2014 +0200
+
+    - smf manifest
+
+commit 759a20b8699b5882024bf30977471f0a93861f5b
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Oct 6 10:49:58 2014 +0200
+
+    - kvmadm it shall be
+
+commit ab2494f33ab2680c572af6d8025530b5d555352f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Oct 6 10:44:35 2014 +0200
+
+    - perllib comment
+
+commit 6a5fd14760fc76f39158daea450564f061237945
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Oct 6 10:00:58 2014 +0200
+
+    initial COPYRIGHT
+
+commit b3bf887fd97a83d8f62e251d15e6e05cb4108465
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Oct 6 09:59:57 2014 +0200
+
+    initial build support added
+
 commit edf0d0d3565f95456cd2acb2a97b6eb9a0f63a51
 Author: Dominik Hassler <hadfl.oss@gmail.com>
 Date:   Sat Oct 4 14:08:25 2014 +0200
