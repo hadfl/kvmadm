@@ -1,6 +1,6 @@
 kvmadm 0.2.2
 ============
-Manage KVMs under SMF control
+Manage KVM instances under SMF control
 
 [![Build Status](https://travis-ci.org/hadfl/kvmadm.svg?branch=master)](https://travis-ci.org/hadfl/kvmadm)
 [![Coverage Status](https://img.shields.io/coveralls/hadfl/kvmadm.svg)](https://coveralls.io/r/hadfl/kvmadm?branch=master)
