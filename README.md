@@ -1,4 +1,4 @@
-kvmadm 0.2.0
+kvmadm 0.2.1
 ============
 Manage KVMs under SMF control
 
@@ -15,10 +15,10 @@ Setup
 Kvmadm uses only core perl, so it should install out of the box on any machine with a current perl installation.
 
 ```sh
-wget https://github.com/hadfl/kvmadm/releases/download/v0.2.0/kvmadm-0.2.0.tar.gz
-tar zxvf kvmadm-0.2.0.tar.gz
-cd kvmadm-0.2.0
-./configure --prefix=/opt/kvmadm-0.2.0 
+wget https://github.com/hadfl/kvmadm/releases/download/v0.2.1/kvmadm-0.2.1.tar.gz
+tar zxvf kvmadm-0.2.1.tar.gz
+cd kvmadm-0.2.1
+./configure --prefix=/opt/kvmadm-0.2.1 
 ```
 
 Now you can run
