@@ -246,7 +246,7 @@ copy a KVM instance
 
     kvmadm list test-kvm > test-kvm.json
 
-    kvmadm create -f test-kvm.json new-test-kvm
+    kvmadm create -f test-kvm.json
 
 =head1 COPYRIGHT
 
