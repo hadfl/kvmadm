@@ -9,6 +9,12 @@ my $FMRI = 'svc:/system/kvm';
 my $ZFS  = '/usr/sbin/zfs';
 my $DLADM = '/usr/sbin/dladm';
 
+my %vcpuOptions = (
+    sockets => 1,
+    cores   => 1,
+    threads => 1,
+);    
+
 # public methods
 sub boolean {
     return shift =~ /^(?:true|false)$/i;
@@ -90,6 +96,22 @@ sub time_base {
     return grep { $_[0] eq $_ } qw(utc localtime);
 }
 
+sub vcpu {
+    my $vcpu = shift;
+
+    return 1 if numeric($vcpu);
+
+    my @vcpu = split ',', $vcpu;
+    
+    for my $vcpuConf (@vcpu){
+        my @vcpuConf = split '=', $vcpuConf, 2;
+        exists $vcpuOptions{$vcpuConf[0]} && numeric($vcpuConf[1])
+            or return 0;
+    }
+
+    return 1;
+}
+
 1;
 
 __END__
@@ -143,6 +165,10 @@ checks if a vnic exists, tires to create it if not
 =head2 time_base
 
 checks if timebase is 'utc' or 'localtime'
+
+=head2 vcpu
+
+checks if a vcpu setting is valid
 
 =head1 COPYRIGHT
 

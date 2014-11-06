@@ -47,7 +47,7 @@ my $kvmProperties = {
         vnc_port    => \&KVMadm::Utils::numeric,
     },
     optional  => {
-        vcpus       => \&KVMadm::Utils::numeric,
+        vcpus       => \&KVMadm::Utils::vcpu,
         ram         => \&KVMadm::Utils::numeric,
         time_base   => \&KVMadm::Utils::time_base,
         boot_order  => \&KVMadm::Utils::alphanumeric,
@@ -188,6 +188,9 @@ sub writeConfig {
     }
     delete $config->{nics};
 
+    #vcpu config hack as we can't store '=' in a SMF property
+    $config->{vcpus} && $config->{vcpus} =~ s/=/-/g;
+
     #write general kvm config
     %$config = (map { $PGRP . '/' . $_ => $config->{$_} } keys %$config);
     $smf->setProperties("$FMRI:$kvmName", $config);
@@ -238,6 +241,9 @@ sub readConfig {
                 last;
             };
 
+            #vcpu config hack as we can't store '=' in a SMF property
+            /^vcpus$/ && $value =~ s/-/=/g;
+
             $config->{$prop} = $value;
         }
     }
@@ -268,6 +274,11 @@ sub getKVMCmdArray {
 
     my $config = $self->readConfig($kvmName);
     $self->checkConfig($config);
+
+    #we specify vnc display number and not raw port number
+    if ($config->{vnc_port} && $config->{vnc_port} >= 5090){
+        $config->{vnc_port} -= 5090;
+    }
 
     my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
