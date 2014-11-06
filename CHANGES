@@ -1,3 +1,9 @@
+commit eab92860aa36efedeec1856987200d0b25c88b0d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 15:26:54 2014 +0100
+
+    get ready for 0.2.0 release
+
 commit f5671567d1c0c82e451ce598e6d5d8c93ea28ada
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Thu Nov 6 15:05:58 2014 +0100
