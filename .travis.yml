@@ -7,6 +7,10 @@ perl:
   - "5.12"
   - "5.10"
 
+# disable dependency install
+install:
+- true
+
 script:
-  - ./configure --prefix=$HOME/kvmadm
+  - ./configure --prefix=$HOME/kvmadm --disable-svcimport
   - make install
