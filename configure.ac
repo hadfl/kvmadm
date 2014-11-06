@@ -20,6 +20,18 @@ if test x$actual_prefix = xNONE; then
     actual_prefix=$ac_default_prefix
 fi
 
+if test x$exec_prefix = xNONE; then
+    exec_prefix=$actual_prefix
+fi
+
+if x$datarootdir='${prefix}/share'; then
+    datarootdir=$actual_prefix/share
+fi
+
+if test x$mandir='x${datarootdir}/man'; then
+    mandir=$datarootdir/man
+fi
+
 
 AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no-perl-found,$actual_prefix/thirdparty/bin:$PATH)
@@ -64,6 +76,7 @@ AC_SUBST(SVCIMPORT)
                                                                 
 AC_MSG_CHECKING(the price for bergulian eckels)
 AC_MSG_RESULT(way to expensive!)
+
 
 AC_CONFIG_FILES([
 	Makefile
