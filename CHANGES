@@ -1,3 +1,15 @@
+commit 288ca53524eb2af34e93b29a8dfd132ce77542d7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 15:56:59 2014 +0100
+
+    getting ready for 0.2.1
+
+commit 410faa1d2e33ddb322cd4305d7202a9ae1c799da
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 15:56:21 2014 +0100
+
+    fix mandir replacement in manifest
+
 commit eab92860aa36efedeec1856987200d0b25c88b0d
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Thu Nov 6 15:26:54 2014 +0100
