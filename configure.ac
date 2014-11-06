@@ -20,17 +20,23 @@ if test x$actual_prefix = xNONE; then
     actual_prefix=$ac_default_prefix
 fi
 
-if test x$exec_prefix = xNONE; then
-    exec_prefix=$actual_prefix
+actual_exec_prefix=$exec_prefix
+if test x$actual_exec_prefix = xNONE; then
+    actual_exec_prefix=$actual_prefix
+fi
+AC_SUBST(actual_exec_prefix)
+
+actual_datarootdir=$datarootdir
+if test x$actual_datarootdir=x'${prefix}/share'; then
+    actual_datarootdir=$actual_prefix/share
 fi
 
-if test x$datarootdir=x'${prefix}/share'; then
-    datarootdir=$actual_prefix/share
+actual_mandir=$mandir
+if test x$actual_mandir=x'${datarootdir}/man'; then
+    actual_mandir=$actual_datarootdir/man
 fi
+AC_SUBST(actual_mandir)
 
-if test x$mandir=x'${datarootdir}/man'; then
-    mandir=$datarootdir/man
-fi
 
 
 AC_ARG_VAR(PERL,   [Path to local perl binary])
