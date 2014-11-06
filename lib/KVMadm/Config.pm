@@ -20,7 +20,7 @@ my $smf;
 my $kvmTemplate = {
     vcpus       => 4,
     ram         => 1024,
-    vnc_port    => 5090,
+    vnc_port    => 0,
     time_base   => 'utc',
     boot_order  => 'cd',
     disks       => [
