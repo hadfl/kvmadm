@@ -21,7 +21,7 @@ cd kvmadm-0.1.0
 ./configure --prefix=/opt/kvmadm-0.1.0 
 ```
 
-Now you can run configure again and then
+Now you can run
 
 ```sh
 make install
