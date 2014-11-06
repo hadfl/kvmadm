@@ -178,6 +178,38 @@ creates a KVM instance with the name B<kvm_name>. Create will open an editor
 where the properties can be set. zvols and/or vnics which do not
 exist will be created.
 
+for the KVM instance the following properties can be set:
+ mandatory
+    vnc_port
+
+ optional
+     vcpus
+     ram
+     time_base
+     boot_order
+
+for each disk the following properties can be set:
+ mandatory
+     model
+     disk_path
+     index 
+
+ optional
+     boot
+     media
+     disk_size
+
+for each vnic the following properties can be set:
+ mandatory
+    model
+    nic_tag
+    index
+
+ optional
+     over
+     txtimer
+     txburst
+
 =head2 B<delete>
 
 deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
