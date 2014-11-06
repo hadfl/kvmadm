@@ -160,7 +160,7 @@ where 'command' is one of the following:
 
     delete <kvm_name>
 
-    edit   <kvm_name>
+    edit <kvm_name>
 
     list [kvm_name]
 
@@ -179,6 +179,7 @@ where the properties can be set. zvols and/or vnics which do not
 exist will be created.
 
 for the KVM instance the following properties can be set:
+
  mandatory
     vnc_port
 
@@ -189,6 +190,7 @@ for the KVM instance the following properties can be set:
      boot_order
 
 for each disk the following properties can be set:
+
  mandatory
      model
      disk_path
@@ -200,15 +202,16 @@ for each disk the following properties can be set:
      disk_size
 
 for each vnic the following properties can be set:
+
  mandatory
     model
     nic_tag
     index
 
  optional
-     over
-     txtimer
-     txburst
+    over
+    txtimer
+    txburst
 
 =head2 B<delete>
 

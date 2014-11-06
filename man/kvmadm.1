@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2014-10-18" "0.1.0" "kvmadm"
+.TH KVMADM 1 "2014-11-06" "0.2.0" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -151,7 +151,7 @@ where 'command' is one of the following:
 \&
 \&    delete <kvm_name>
 \&
-\&    edit   <kvm_name>
+\&    edit <kvm_name>
 \&
 \&    list [kvm_name]
 \&
@@ -164,16 +164,89 @@ where 'command' is one of the following:
 Use kvmadm to create/edit your KVMs under \s-1SMF\s0 control
 .SS "\fBcreate\fP"
 .IX Subsection "create"
+creates a \s-1KVM\s0 instance with the name \fBkvm_name\fR. Create will open an editor
+where the properties can be set. zvols and/or vnics which do not
+exist will be created.
+.PP
+for the \s-1KVM\s0 instance the following properties can be set:
+.PP
+.Vb 2
+\& mandatory
+\&    vnc_port
+\&
+\& optional
+\&     vcpus
+\&     ram
+\&     time_base
+\&     boot_order
+.Ve
+.PP
+for each disk the following properties can be set:
+.PP
+.Vb 4
+\& mandatory
+\&     model
+\&     disk_path
+\&     index 
+\&
+\& optional
+\&     boot
+\&     media
+\&     disk_size
+.Ve
+.PP
+for each vnic the following properties can be set:
+.PP
+.Vb 4
+\& mandatory
+\&    model
+\&    nic_tag
+\&    index
+\&
+\& optional
+\&    over
+\&    txtimer
+\&    txburst
+.Ve
 .SS "\fBdelete\fP"
 .IX Subsection "delete"
+deletes the \s-1KVM\s0 instance with the name \fBkvm_name\fR. Note: zvols and vnics will
+\&\fBnot\fR be deleted.
 .SS "\fBedit\fP"
 .IX Subsection "edit"
+modify the configuration of a \s-1KVM\s0 instance. See the descriptions in the \fBcreate\fR
+function for details.
 .SS "\fBlist\fP"
 .IX Subsection "list"
-.SS "\fBexport\fP"
-.IX Subsection "export"
+lists the available \s-1KVM\s0 instances with their properties. Lists details for \fBkvm_name\fR
+is given.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
+create a \s-1KVM\s0 instance with the name 'test\-kvm'
+.PP
+.Vb 1
+\&    kvmadm create test\-kvm
+.Ve
+.PP
+check the \s-1KVM\s0 instance properties
+.PP
+.Vb 1
+\&    kvmadm list test\-kvm
+.Ve
+.PP
+list the available \s-1KVM\s0 instances
+.PP
+.Vb 1
+\&    svcs system/kvm
+.Ve
+.PP
+copy a \s-1KVM\s0 instance
+.PP
+.Vb 1
+\&    kvmadm list test\-kvm > test\-kvm.json
+\&
+\&    kvmadm create \-f test\-kvm.json new\-test\-kvm
+.Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2014 by \s-1OETIKER+PARTNER AG.\s0 All rights reserved.

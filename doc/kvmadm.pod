@@ -8,15 +8,13 @@ B<kvmadm> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [-f <file>] <kvm_name>
+    create [-f <filename>] <kvm_name>
 
     delete <kvm_name>
 
-    edit   <kvm_name>
+    edit <kvm_name>
 
     list [kvm_name]
-
-    export <kvm_name>
 
     help
 
@@ -28,13 +26,79 @@ Use kvmadm to create/edit your KVMs under SMF control
 
 =head2 B<create>
 
+creates a KVM instance with the name B<kvm_name>. Create will open an editor
+where the properties can be set. zvols and/or vnics which do not
+exist will be created.
+
+for the KVM instance the following properties can be set:
+
+ mandatory
+    vnc_port
+
+ optional
+     vcpus
+     ram
+     time_base
+     boot_order
+
+for each disk the following properties can be set:
+
+ mandatory
+     model
+     disk_path
+     index 
+
+ optional
+     boot
+     media
+     disk_size
+
+for each vnic the following properties can be set:
+
+ mandatory
+    model
+    nic_tag
+    index
+
+ optional
+    over
+    txtimer
+    txburst
+
 =head2 B<delete>
+
+deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
+B<not> be deleted.
 
 =head2 B<edit>
 
-=head2 B<export>
+modify the configuration of a KVM instance. See the descriptions in the B<create>
+function for details.
+
+=head2 B<list>
+
+lists the available KVM instances with their properties. Lists details for B<kvm_name>
+is given.
 
 =head1 EXAMPLES
+
+create a KVM instance with the name 'test-kvm'
+
+    kvmadm create test-kvm
+
+check the KVM instance properties
+
+    kvmadm list test-kvm
+
+list the available KVM instances
+
+    svcs system/kvm
+
+copy a KVM instance
+
+    kvmadm list test-kvm > test-kvm.json
+
+    kvmadm create -f test-kvm.json new-test-kvm
 
 =head1 COPYRIGHT
 
