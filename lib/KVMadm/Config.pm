@@ -276,8 +276,8 @@ sub getKVMCmdArray {
     $self->checkConfig($config);
 
     #we specify vnc display number and not raw port number
-    if ($config->{vnc_port} && $config->{vnc_port} >= 5090){
-        $config->{vnc_port} -= 5090;
+    if ($config->{vnc_port} && $config->{vnc_port} >= 5900){
+        $config->{vnc_port} -= 5900;
     }
 
     my @cmdArray = ($QEMU_KVM);
