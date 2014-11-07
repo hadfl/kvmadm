@@ -52,6 +52,7 @@ my $kvmProperties = {
         time_base   => \&KVMadm::Utils::time_base,
         boot_order  => \&KVMadm::Utils::alphanumeric,
         hpet        => \&KVMadm::Utils::boolean,
+        usb_tablet  => \&KVMadm::Utils::boolean,
     },
     sections  => {
         disks   => {
@@ -329,6 +330,9 @@ sub getKVMCmdArray {
         push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
             . $nic->{nic_tag} . ',ifname=' . $nic->{nic_tag});
     }
+
+    push @cmdArray, qw(-usb -usbdevice tablet)
+        if $config->{usb_tablet} && $config->{usb_tablet} =~ /^true$/i;
 
     push @cmdArray, qw(-daemonize);
 
