@@ -51,6 +51,7 @@ my $kvmProperties = {
         ram         => \&KVMadm::Utils::numeric,
         time_base   => \&KVMadm::Utils::time_base,
         boot_order  => \&KVMadm::Utils::alphanumeric,
+        hpet        => \&KVMadm::Utils::boolean,
     },
     sections  => {
         disks   => {
@@ -282,7 +283,8 @@ sub getKVMCmdArray {
 
     my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
-    push @cmdArray, qw(-enable-kvm -no-hpet -vga std);
+    push @cmdArray, qw(-enable-kvm -vga std);
+    push @cmdArray, '-no-hpet' if !exists $config->{hpet} || $config->{hpet} !~ /^true$/i;
     push @cmdArray, ('-m', $config->{ram} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
     push @cmdArray, ('-smp', $config->{vcpus} // '1');
