@@ -1,3 +1,57 @@
+commit 8e54ccadecb4271bedb04ad18b64178aa234d838
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 13:13:58 2014 +0100
+
+    - serial support added
+
+commit 61d4b6be94243c4d2b11a0ac57a02dd9a826fc7d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 11:31:07 2014 +0100
+
+    - usbdevice tablet option added
+
+commit 4a1948537f05c65e26857165a902dd5fdfd8a19d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 10:48:55 2014 +0100
+
+    - sockets for vnc supported
+
+commit 3ac1090c7967273f949d9350701140c443fb44b6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 09:05:23 2014 +0100
+
+    - hpet can now be set to [true, false]
+
+commit 5aaf53ca72bfe3342bec5d2de77744be824d5dd4
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Nov 6 19:59:19 2014 +0100
+
+    - corrected vnc port
+
+commit 63c7daa9a345177a8577b5126cd7868a2cc644df
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Nov 6 16:48:01 2014 +0100
+
+    - readme wording
+
+commit b9fafc56f089ec94701a565df0dc0b511d39e3d1
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Nov 6 16:30:39 2014 +0100
+
+    - added license and copyright for system-kvm
+
+commit 7b58c091d6a99e196a9fdb364ee4da122263daa5
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Nov 6 16:20:38 2014 +0100
+
+    - documentation syntax correction
+
+commit 027e93c22d571333e1a35f80c8ae493187921ff3
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 16:17:40 2014 +0100
+
+    be more careful with replacement strings in service manifest
+
 commit 390fae936c1fbd6178789f82614ab866bf465d4d
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Thu Nov 6 16:11:05 2014 +0100

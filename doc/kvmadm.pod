@@ -33,13 +33,15 @@ exist will be created.
 for the KVM instance the following properties can be set:
 
  mandatory
-    vnc_port
+    vnc
 
  optional
      vcpus
      ram
      time_base
      boot_order
+     hpet
+     usb_tablet
 
 for each disk the following properties can be set:
 
@@ -64,6 +66,12 @@ for each vnic the following properties can be set:
     over
     txtimer
     txburst
+
+for each serial the following properties can be set:
+
+ mandatory
+    serial_tag
+    index
 
 =head2 B<delete>
 
@@ -98,7 +106,7 @@ copy a KVM instance
 
     kvmadm list test-kvm > test-kvm.json
 
-    kvmadm create -f test-kvm.json new-test-kvm
+    kvmadm create -f test-kvm.json
 
 =head1 COPYRIGHT
 
