@@ -200,9 +200,6 @@ sub writeConfig {
         delete $config->{$section};
     }
 
-    #vcpu config hack as we can't store '=' in a SMF property
-    $config->{vcpus} && $config->{vcpus} =~ s/=/-/g;
-
     #write general kvm config
     %$config = (map { $PGRP . '/' . $_ => $config->{$_} } keys %$config);
     $smf->setProperties("$FMRI:$kvmName", $config);
@@ -243,9 +240,6 @@ sub readConfig {
                 last;
             };
             
-            #vcpu config hack as we can't store '=' in a SMF property
-            /^vcpus$/ && $value =~ s/-/=/g;
-
             $config->{$prop} = $value;
         }
     }
