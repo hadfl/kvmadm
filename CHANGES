@@ -1,3 +1,15 @@
+commit 6bf987beb438aa57a78ebed66978da93c375c732
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 16:45:20 2014 +0100
+
+    - FMRI: proper handling of special characters (e.g. '=')
+
+commit ab712dca9e548a0c78d3097c0e47923cba5a927c
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 14:20:23 2014 +0100
+
+    - getting ready for 0.3.0
+
 commit 8e54ccadecb4271bedb04ad18b64178aa234d838
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Nov 7 13:13:58 2014 +0100
