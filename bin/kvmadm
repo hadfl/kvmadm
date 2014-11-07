@@ -188,6 +188,7 @@ for the KVM instance the following properties can be set:
      ram
      time_base
      boot_order
+     hpet
 
 for each disk the following properties can be set:
 
