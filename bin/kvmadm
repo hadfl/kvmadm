@@ -280,6 +280,11 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
+=head1 ACKNOWLEDGMENT
+
+While the clever configuration options and other cool ideas have been shamelessly
+stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm.
+
 =head1 HISTORY
 
 2014-10-03 had Initial Version
