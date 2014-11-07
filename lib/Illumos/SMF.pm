@@ -137,8 +137,8 @@ sub setProperty {
     }
 
     my @cmd = $self->propertyExists($fmri, $property) ?
-        ($SVCCFG, '-s', $fmri, 'setprop', $property, '=', $value)
-        : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:", $value);
+        ($SVCCFG, '-s', $fmri, 'setprop', $property, '=', "\"$value\"")
+        : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:", "\"$value\"");
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot set property $property of $fmri\n";
 
