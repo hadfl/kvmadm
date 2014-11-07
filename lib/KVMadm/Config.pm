@@ -40,6 +40,12 @@ my $kvmTemplate = {
             index       => '0',
         }
     ],
+    serials     => [
+        {
+            serial_tag  => 'console',
+            index       => '0',
+        }
+    ],
 };
 
 my $kvmProperties = {
@@ -55,6 +61,7 @@ my $kvmProperties = {
         usb_tablet  => \&KVMadm::Utils::boolean,
     },
     sections  => {
+        #section names must end with an 's'
         disks   => {
             mandatory => {
                 model       => \&KVMadm::Utils::disk_model,
@@ -77,6 +84,14 @@ my $kvmProperties = {
                 over        => \&KVMadm::Utils::alphanumeric,
                 txtimer     => \&KVMadm::Utils::numeric,
                 txburst     => \&KVMadm::Utils::numeric,
+            },
+        },
+        serials => {
+            mandatory => {
+                serial_tag  => \&KVMadm::Utils::alphanumeric,
+                index       => \&KVMadm::Utils::numeric,
+            },
+            optional  => {
             },
         },
     },
@@ -172,23 +187,18 @@ sub writeConfig {
     
     $smf->refreshFMRI("$FMRI:$kvmName");
 
-    #write disk configs
-    my $counter = 0;
-    for my $disk (@{$config->{disks}}){
-        %$disk = (map { "$PGRP/disk$counter" . '_' . $_ => $disk->{$_} } keys %$disk);
-        $smf->setProperties("$FMRI:$kvmName", $disk);
-        $counter++;
-    }
-    delete $config->{disks};
+    #write section configs
+    for my $section (keys $kvmProperties->{sections}){
+        my $counter = 0;
+        my ($devName) = $section =~ /^(.+)s$/;
 
-    #write nic configs
-    $counter = 0;
-    for my $nic (@{$config->{nics}}){
-        %$nic = (map { "$PGRP/nic$counter" . '_' . $_ => $nic->{$_} } keys %$nic);
-        $smf->setProperties("$FMRI:$kvmName", $nic);
-        $counter++;
+        for my $dev (@{$config->{$section}}){
+            %$dev = (map { "$PGRP/$devName" . $counter . '_' . $_ => $dev->{$_} } keys %$dev);
+            $smf->setProperties("$FMRI:$kvmName", $dev);
+            $counter++;
+        }
+        delete $config->{$section};
     }
-    delete $config->{nics};
 
     #vcpu config hack as we can't store '=' in a SMF property
     $config->{vcpus} && $config->{vcpus} =~ s/=/-/g;
@@ -212,37 +222,27 @@ sub readConfig {
 
     my $properties = $smf->getProperties("$FMRI:$kvmName", $PGRP);
 
+    my $sectRE = join '|', map { /^(.+)s$/; $1 } keys $kvmProperties->{sections};
+
     for my $prop (keys %$properties){
         my $value = $properties->{$prop};
         $prop =~ s|^$PGRP/||;
 
         for ($prop){
-            /^disk(\d+)_(.+)$/ && do {
-                my $index = $1;
-                my $key   = $2;
+            /^($sectRE)(\d+)_(.+)$/ && do {
+                my $sect  = $1 . 's';
+                my $index = $2;
+                my $key   = $3;
 
-                exists $config->{disks} or $config->{disks} = [];
-                while ($#{$config->{disks}} < $index){
-                    push @{$config->{disks}}, {};
+                exists $config->{$sect} or $config->{$sect} = [];
+                while ($#{$config->{$sect}} < $index){
+                    push @{$config->{$sect}}, {};
                 }
 
-                $config->{disks}->[$index]->{$key} = $value;
+                $config->{$sect}->[$index]->{$key} = $value;
                 last;
             };
             
-            /^nic(\d+)_(.+)$/ && do {
-                my $index = $1;
-                my $key   = $2;
-
-                exists $config->{nics} or $config->{nics} = [];
-                while ($#{$config->{nics}} < $index){
-                    push @{$config->{nics}}, {};
-                }
-
-                $config->{nics}->[$index]->{$key} = $value;
-                last;
-            };
-
             #vcpu config hack as we can't store '=' in a SMF property
             /^vcpus$/ && $value =~ s/-/=/g;
 
@@ -329,6 +329,12 @@ sub getKVMCmdArray {
 
         push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
             . $nic->{nic_tag} . ',ifname=' . $nic->{nic_tag});
+    }
+
+    for my $serial (@{$config->{serials}}){
+        push @cmdArray, ('-chardev', 'socket,id=serial' . $serial->{index}
+            . ',path=' . $RUN_PATH . '/' . $kvmName . '.' . $serial->{serial_tag} . ',server,nowait');
+        push @cmdArray, ('-serial', 'chardev:serial' . $serial->{index});
     }
 
     push @cmdArray, qw(-usb -usbdevice tablet)
