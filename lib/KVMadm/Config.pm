@@ -20,7 +20,7 @@ my $smf;
 my $kvmTemplate = {
     vcpus       => 4,
     ram         => 1024,
-    vnc_port    => 0,
+    vnc         => 0,
     time_base   => 'utc',
     boot_order  => 'cd',
     disks       => [
@@ -44,7 +44,7 @@ my $kvmTemplate = {
 
 my $kvmProperties = {
     mandatory => {
-        vnc_port    => \&KVMadm::Utils::numeric,
+        vnc         => \&KVMadm::Utils::vnc,
     },
     optional  => {
         vcpus       => \&KVMadm::Utils::vcpu,
@@ -276,11 +276,6 @@ sub getKVMCmdArray {
     my $config = $self->readConfig($kvmName);
     $self->checkConfig($config);
 
-    #we specify vnc display number and not raw port number
-    if ($config->{vnc_port} && $config->{vnc_port} >= 5900){
-        $config->{vnc_port} -= 5900;
-    }
-
     my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
     push @cmdArray, qw(-enable-kvm -vga std);
@@ -291,7 +286,14 @@ sub getKVMCmdArray {
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
-    push @cmdArray, ('-vnc', '0.0.0.0:' . ($config->{vnc_port} // '0') . ',console');
+
+    if ($config->{vnc} =~ /^sock(?:et)?$/i){
+        push @cmdArray, ('-vnc', 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
+    }
+    else{
+        $config->{vnc} -= 5900 if $config->{vnc} >= 5900;
+        push @cmdArray, ('-vnc', '0.0.0.0:' . $config->{vnc} . ',console');
+    }
 
     for my $disk (@{$config->{disks}}){
         $disk->{disk_path} = '/dev/zvol/rdsk/' . $disk->{disk_path}

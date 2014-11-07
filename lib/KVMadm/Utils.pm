@@ -112,6 +112,12 @@ sub vcpu {
     return 1;
 }
 
+sub vnc {
+    my $vnc = shift;
+
+    return numeric($vnc) || $vnc =~ /^sock(?:et)?$/i;
+}
+
 1;
 
 __END__
@@ -169,6 +175,10 @@ checks if timebase is 'utc' or 'localtime'
 =head2 vcpu
 
 checks if a vcpu setting is valid
+
+=head vnc
+
+checks if the argument is either numeric or 'sock'
 
 =head1 COPYRIGHT
 
