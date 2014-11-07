@@ -181,7 +181,7 @@ exist will be created.
 for the KVM instance the following properties can be set:
 
  mandatory
-    vnc_port
+    vnc
 
  optional
      vcpus
@@ -189,6 +189,7 @@ for the KVM instance the following properties can be set:
      time_base
      boot_order
      hpet
+     usb_tablet
 
 for each disk the following properties can be set:
 
