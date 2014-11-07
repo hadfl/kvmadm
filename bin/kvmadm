@@ -215,6 +215,12 @@ for each vnic the following properties can be set:
     txtimer
     txburst
 
+for each serial the following properties can be set:
+
+ mandatory
+    serial_tag
+    index
+
 =head2 B<delete>
 
 deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
