@@ -112,6 +112,22 @@ my $getMAC = sub {
     return $mac;
 };
 
+my $getVCPU = sub {
+   my $config = shift;
+
+   if (!KVMadm::Utils::numeric($config->{vcpus})){
+       my $vcpu_count = 1;
+       # assuming config is good
+       my @vcpu = split ',', $config->{vcpus};
+       for my $vcpuConf (@vcpu){
+           my @vcpuConf = split '=', $vcpuConf, 2;
+           $vcpu_count = $vcpu_count * $vcpuConf[1];
+       }
+       return $vcpu_count . ',' . $config->{vcpus};
+   }
+   return $config->{vcpus};
+};
+
 # constructor
 sub new {
     my $class = shift;
@@ -277,7 +293,7 @@ sub getKVMCmdArray {
     push @cmdArray, '-no-hpet' if !exists $config->{hpet} || $config->{hpet} !~ /^true$/i;
     push @cmdArray, ('-m', $config->{ram} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
-    push @cmdArray, ('-smp', $config->{vcpus} // '1');
+    push @cmdArray, ('-smp', $getVCPU->($config) // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
