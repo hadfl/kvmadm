@@ -106,6 +106,7 @@ my $getMAC = sub {
         or die "ERROR: cannot get mac address of vnic $vnicName\n";
     
     my $mac = <$macAddr>;
+    close $macAddr;
     $mac or die "ERROR: cannot get mac address of vnic $vnicName\n";
     chomp $mac;
     $mac =~ s/(?<![\da-f])([\da-f])(?![\da-f])/0$1/gi;
