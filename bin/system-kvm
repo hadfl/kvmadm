@@ -2,7 +2,7 @@
 
 use FindBin;
 # PERL5LIB
-use lib "$FindBin::Bin/../../lib/amd64";
+use lib "$FindBin::Bin/../lib";
 use strict;
 use warnings;
 
