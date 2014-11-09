@@ -118,6 +118,12 @@ sub vnc {
     return numeric($vnc) || $vnc =~ /^sock(?:et)?$/i;
 }
 
+sub serial_tag {
+    my $tag = shift;
+
+    return 1 if alphanumeric($tag) && $tag !~ /vnc|monitor/;
+}
+
 1;
 
 __END__
@@ -167,6 +173,10 @@ checks if the disk size is valid
 =head2 nic_tag
 
 checks if a vnic exists, tires to create it if not
+
+=head2 serial_tag
+
+checks if serial_tag is not one of the reserved names
 
 =head2 time_base
 

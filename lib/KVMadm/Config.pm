@@ -88,7 +88,7 @@ my $kvmProperties = {
         },
         serials => {
             mandatory => {
-                serial_tag  => \&KVMadm::Utils::alphanumeric,
+                serial_tag  => \&KVMadm::Utils::serial_tag,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
