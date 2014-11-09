@@ -5,9 +5,10 @@ use warnings;
 
 use Illumos::SMF;
 
-my $FMRI = 'svc:/system/kvm';
-my $ZFS  = '/usr/sbin/zfs';
-my $DLADM = '/usr/sbin/dladm';
+my $FMRI     = 'svc:/system/kvm';
+my $ZFS      = '/usr/sbin/zfs';
+my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
+my $DLADM    = '/usr/sbin/dladm';
 
 my %vcpuOptions = (
     sockets => 1,
@@ -112,6 +113,26 @@ sub vcpu {
     return 1;
 }
 
+sub cpu_type {
+    my $cpu_type = shift;
+    my @cmd = ($QEMU_KVM, qw(-cpu ?));
+
+    open my $types, '-|', @cmd or die "ERROR: cannot get cpu types\n";
+    my @types = <$types>;
+    chomp(@types);
+    close $types;
+
+    for my $type (@types){
+        my @type = split ' ', $type;
+        $type = $type[-1];
+        $type =~ s/[\[\]]//g;
+        
+        return 1 if $cpu_type eq $type;
+    }
+
+    return 0;
+}
+
 sub vnc {
     my $vnc = shift;
 
@@ -175,6 +196,10 @@ checks if timebase is 'utc' or 'localtime'
 =head2 vcpu
 
 checks if a vcpu setting is valid
+
+=head2 cpu_type
+
+checks if a cpu_type is supported by qemu
 
 =head vnc
 
