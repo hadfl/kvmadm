@@ -5,14 +5,16 @@ use warnings;
 
 use Illumos::SMF;
 
-my $FMRI = 'svc:/system/kvm';
-my $ZFS  = '/usr/sbin/zfs';
-my $DLADM = '/usr/sbin/dladm';
+my $FMRI     = 'svc:/system/kvm';
+my $ZFS      = '/usr/sbin/zfs';
+my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
+my $DLADM    = '/usr/sbin/dladm';
 
 my %vcpuOptions = (
     sockets => 1,
     cores   => 1,
     threads => 1,
+    maxcpus => 1,
 );    
 
 # public methods
@@ -102,6 +104,8 @@ sub vcpu {
     return 1 if numeric($vcpu);
 
     my @vcpu = split ',', $vcpu;
+
+    shift @vcpu if numeric($vcpu[0]);
     
     for my $vcpuConf (@vcpu){
         my @vcpuConf = split '=', $vcpuConf, 2;
@@ -112,10 +116,28 @@ sub vcpu {
     return 1;
 }
 
+sub cpu_type {
+    my $cpu_type = shift;
+    my @cmd = ($QEMU_KVM, qw(-cpu ?));
+
+    open my $types, '-|', @cmd or die "ERROR: cannot get cpu types\n";
+    my @types = <$types>;
+    chomp(@types);
+    close $types;
+
+    return grep { /\[?$cpu_type\]?$/ } @types;
+}
+
 sub vnc {
     my $vnc = shift;
 
     return numeric($vnc) || $vnc =~ /^sock(?:et)?$/i;
+}
+
+sub serial_tag {
+    my $tag = shift;
+
+    return 1 if alphanumeric($tag) && $tag !~ /^(?:pid|vnc|monitor)$/;
 }
 
 1;
@@ -168,6 +190,10 @@ checks if the disk size is valid
 
 checks if a vnic exists, tires to create it if not
 
+=head2 serial_tag
+
+checks if serial_tag is not one of the reserved names
+
 =head2 time_base
 
 checks if timebase is 'utc' or 'localtime'
@@ -175,6 +201,10 @@ checks if timebase is 'utc' or 'localtime'
 =head2 vcpu
 
 checks if a vcpu setting is valid
+
+=head2 cpu_type
+
+checks if a cpu_type is supported by qemu
 
 =head vnc
 

@@ -59,6 +59,7 @@ my $kvmProperties = {
         boot_order  => \&KVMadm::Utils::alphanumeric,
         hpet        => \&KVMadm::Utils::boolean,
         usb_tablet  => \&KVMadm::Utils::boolean,
+        cpu_type    => \&KVMadm::Utils::cpu_type,
     },
     sections  => {
         #section names must end with an 's'
@@ -88,7 +89,7 @@ my $kvmProperties = {
         },
         serials => {
             mandatory => {
-                serial_tag  => \&KVMadm::Utils::alphanumeric,
+                serial_tag  => \&KVMadm::Utils::serial_tag,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
@@ -106,6 +107,7 @@ my $getMAC = sub {
         or die "ERROR: cannot get mac address of vnic $vnicName\n";
     
     my $mac = <$macAddr>;
+    close $macAddr;
     $mac or die "ERROR: cannot get mac address of vnic $vnicName\n";
     chomp $mac;
     $mac =~ s/(?<![\da-f])([\da-f])(?![\da-f])/0$1/gi;
