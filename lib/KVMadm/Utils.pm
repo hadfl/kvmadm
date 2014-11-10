@@ -122,15 +122,7 @@ sub cpu_type {
     chomp(@types);
     close $types;
 
-    for my $type (@types){
-        my @type = split ' ', $type;
-        $type = $type[-1];
-        $type =~ s/[\[\]]//g;
-        
-        return 1 if $cpu_type eq $type;
-    }
-
-    return 0;
+    return grep { /\[?$cpu_type\]?$/ } @types;
 }
 
 sub vnc {
