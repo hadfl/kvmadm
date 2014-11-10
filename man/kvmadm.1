@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2014-11-07" "0.3.1" "kvmadm"
+.TH KVMADM 1 "2014-11-10" "0.4.0" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -172,6 +172,8 @@ for the \s-1KVM\s0 instance the following properties can be set:
 \&     boot_order
 \&     hpet
 \&     usb_tablet
+\&     shutdown
+\&     cleanup
 .Ve
 .PP
 for each disk the following properties can be set:
@@ -186,6 +188,7 @@ for each disk the following properties can be set:
 \&     boot
 \&     media
 \&     disk_size
+\&     cache
 .Ve
 .PP
 for each vnic the following properties can be set:
@@ -193,7 +196,7 @@ for each vnic the following properties can be set:
 .Vb 4
 \& mandatory
 \&    model
-\&    nic_tag
+\&    nic_name
 \&    index
 \&
 \& optional
@@ -206,7 +209,7 @@ for each serial the following properties can be set:
 .PP
 .Vb 3
 \& mandatory
-\&    serial_tag
+\&    serial_name
 \&    index
 .Ve
 .SS "\fBdelete\fP"
@@ -269,6 +272,10 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 .IX Header "AUTHOR"
 Tobias\ Oetiker\ <tobi@oetiker.ch>
 Dominik\ Hassler\ <hadfl@cpan.org>
+.SH "ACKNOWLEDGMENT"
+.IX Header "ACKNOWLEDGMENT"
+While the clever configuration options and other cool ideas have been shamelessly
+stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm.
 .SH "HISTORY"
 .IX Header "HISTORY"
 2014\-10\-03 had Initial Version

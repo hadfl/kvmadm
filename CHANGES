@@ -1,3 +1,87 @@
+commit 68d08c762763dece40116e28fd20308649516476
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 15:58:08 2014 +0100
+
+    - changed 'tag' -> 'name'
+
+commit d242ef185804ba752b22fb9061a2c7133537b406
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 15:53:25 2014 +0100
+
+    - bugfix: cleanup timeout
+
+commit c3b97e146a3c1f5d9b1180a640c8b62e70170de2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 15:24:51 2014 +0100
+
+    - cleanup RUN_PATH on stop as option
+
+commit 295ffc43957cf01222f3fb83ebc6ada55e8f22dc
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 14:30:28 2014 +0100
+
+    - shutdown method can be specified
+
+commit e77a04979bf3dc096491b38f466747173bb1ba03
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 13:01:39 2014 +0100
+
+    - disk cache option added
+
+commit 0cb03c4e73ca34b37c09afb74c2d9b41d05c97dc
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Mon Nov 10 12:31:28 2014 +0100
+
+    fixes based on hadfls comments
+
+commit 35c1ceff183df8b4105c6e040ef6e278d6479e78
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Sun Nov 9 14:54:07 2014 +0100
+
+    Implement cpu_type as requested in issue #20
+
+commit 0875be1785ec08b5b1cf8a6a4c1cdb625594ff0d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 12:16:52 2014 +0100
+
+    - complex cpu topology fix
+
+commit e216183aa8b41b535442497b4ec2fc2c2feb370e
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Sun Nov 9 15:39:08 2014 +0100
+
+    minor cleanup
+
+commit d8da8ba1fca0a2e663d25981735e6b61b860f9a2
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Mon Nov 10 11:20:20 2014 +0100
+
+    small change as sugested by hadfl
+
+commit 385a257b3faf6a98375633cd81876965a48bb8a8
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Sun Nov 9 17:20:40 2014 +0100
+
+    also exclude pid as a serial_tag
+
+commit ae78b36ffdcb8f77dc352f51ddbaaf2dcedc6111
+Author: hal9k <hal9k-illumos@skynet.be>
+Date:   Sun Nov 9 13:49:13 2014 +0100
+
+    avoid collision with serial tag names with vnc and monitor.
+
+commit 670415d89fa352ed4e05f3d63d92c30d5a2cb136
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 20:35:11 2014 +0100
+
+    - cui honorem, honorem
+
+commit 4ae129b96d8f9a4fb3ae8a3752e96184a1306159
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 16:50:55 2014 +0100
+
+    getting ready for 0.3.1
+
 commit 6bf987beb438aa57a78ebed66978da93c375c732
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Nov 7 16:45:20 2014 +0100

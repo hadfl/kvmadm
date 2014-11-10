@@ -81,7 +81,7 @@ sub disk_cache {
 }
 
 sub nic_name {
-    my $nicTag = shift;
+    my $nicName = shift;
     my $nic = shift;
 
     my @cmd = ($DLADM, qw(show-vnic -p -o link));
@@ -92,7 +92,7 @@ sub nic_name {
     chomp(@vnics);
     close $vnics;
 
-    grep { $nicTag eq $_ } @vnics or do {
+    grep { $nicName eq $_ } @vnics or do {
         #get first physical link if over is not given
         exists $nic->{over} || do {
             @cmd = ($DLADM, qw(show-phys -p -o link));
@@ -103,9 +103,9 @@ sub nic_name {
             close $nics;
         };
              
-        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over}, $nicTag);
-        print STDERR "-> vnic '$nicTag' does not exist. creating it...\n";
-        system(@cmd) && die "ERROR: cannot create vnic '$nicTag'\n";
+        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over}, $nicName);
+        print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
+        system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
     };
 
     return 1;

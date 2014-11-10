@@ -42,6 +42,8 @@ for the KVM instance the following properties can be set:
      boot_order
      hpet
      usb_tablet
+     shutdown
+     cleanup
 
 for each disk the following properties can be set:
 
@@ -54,12 +56,13 @@ for each disk the following properties can be set:
      boot
      media
      disk_size
+     cache
 
 for each vnic the following properties can be set:
 
  mandatory
     model
-    nic_tag
+    nic_name
     index
 
  optional
@@ -70,7 +73,7 @@ for each vnic the following properties can be set:
 for each serial the following properties can be set:
 
  mandatory
-    serial_tag
+    serial_name
     index
 
 =head2 B<delete>
@@ -131,6 +134,11 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
+
+=head1 ACKNOWLEDGMENT
+
+While the clever configuration options and other cool ideas have been shamelessly
+stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm.
 
 =head1 HISTORY
 
