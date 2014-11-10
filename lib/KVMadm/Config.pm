@@ -59,6 +59,7 @@ my $kvmProperties = {
         boot_order  => \&KVMadm::Utils::alphanumeric,
         hpet        => \&KVMadm::Utils::boolean,
         usb_tablet  => \&KVMadm::Utils::boolean,
+        cpu_type    => \&KVMadm::Utils::cpu_type,
     },
     sections  => {
         #section names must end with an 's'
