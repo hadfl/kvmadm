@@ -210,7 +210,7 @@ for each vnic the following properties can be set:
 
  mandatory
     model
-    nic_tag
+    nic_name
     index
 
  optional
@@ -221,7 +221,7 @@ for each vnic the following properties can be set:
 for each serial the following properties can be set:
 
  mandatory
-    serial_tag
+    serial_name
     index
 
 =head2 B<delete>

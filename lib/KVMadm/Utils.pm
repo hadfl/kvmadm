@@ -80,7 +80,7 @@ sub disk_cache {
     return exists $diskCacheOptions{$diskCache};
 }
 
-sub nic_tag {
+sub nic_name {
     my $nicTag = shift;
     my $nic = shift;
 
@@ -151,10 +151,10 @@ sub vnc {
     return numeric($vnc) || $vnc =~ /^sock(?:et)?$/i;
 }
 
-sub serial_tag {
-    my $tag = shift;
+sub serial_name {
+    my $name = shift;
 
-    return 1 if alphanumeric($tag) && $tag !~ /^(?:pid|vnc|monitor)$/;
+    return 1 if alphanumeric($name) && $name !~ /^(?:pid|vnc|monitor)$/;
 }
 
 sub shutdown_type {
@@ -212,13 +212,13 @@ checks if the disk size is valid
 
 checks if the argument is a valid disk cache option
 
-=head2 nic_tag
+=head2 nic_name
 
 checks if a vnic exists, tires to create it if not
 
-=head2 serial_tag
+=head2 serial_name
 
-checks if serial_tag is not one of the reserved names
+checks if serial_name is not one of the reserved names
 
 =head2 time_base
 

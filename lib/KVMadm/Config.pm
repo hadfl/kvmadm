@@ -34,7 +34,7 @@ my $kvmTemplate = {
     ],
     nics        => [
         {
-            nic_tag     => '',
+            nic_name    => '',
             over        => '',
             model       => 'virtio',
             index       => '0',
@@ -42,7 +42,7 @@ my $kvmTemplate = {
     ],
     serials     => [
         {
-            serial_tag  => 'console',
+            serial_name => 'console',
             index       => '0',
         }
     ],
@@ -81,7 +81,7 @@ my $kvmProperties = {
         nics    => {
             mandatory => {
                 model       => \&KVMadm::Utils::alphanumeric,
-                nic_tag     => \&KVMadm::Utils::nic_tag,
+                nic_name    => \&KVMadm::Utils::nic_name,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
@@ -92,7 +92,7 @@ my $kvmProperties = {
         },
         serials => {
             mandatory => {
-                serial_tag  => \&KVMadm::Utils::serial_tag,
+                serial_name => \&KVMadm::Utils::serial_name,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
@@ -311,7 +311,7 @@ sub getKVMCmdArray {
     push @cmdArray, ('-boot', 'order=' . ($config->{boot_order} ? $config->{boot_order} : 'cd'));
 
     for my $nic (@{$config->{nics}}){
-        my $mac = $getMAC->($nic->{nic_tag});
+        my $mac = $getMAC->($nic->{nic_name});
 
         if ($nic->{model} eq 'virtio'){
             push @cmdArray, ('-device',
@@ -324,16 +324,16 @@ sub getKVMCmdArray {
         }
         else{
             push @cmdArray, ('-net', 'nic,vlan=' . $nic->{index} . ',name='
-                . $nic->{nic_tag} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
+                . $nic->{nic_name} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
         }
 
         push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
-            . $nic->{nic_tag} . ',ifname=' . $nic->{nic_tag});
+            . $nic->{nic_name} . ',ifname=' . $nic->{nic_name});
     }
 
     for my $serial (@{$config->{serials}}){
         push @cmdArray, ('-chardev', 'socket,id=serial' . $serial->{index}
-            . ',path=' . $RUN_PATH . '/' . $kvmName . '.' . $serial->{serial_tag} . ',server,nowait');
+            . ',path=' . $RUN_PATH . '/' . $kvmName . '.' . $serial->{serial_name} . ',server,nowait');
         push @cmdArray, ('-serial', 'chardev:serial' . $serial->{index});
     }
 
