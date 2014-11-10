@@ -8,6 +8,7 @@ use warnings;
 
 use File::Basename;
 use IO::Socket::UNIX qw(SOCK_STREAM);
+use POSIX qw(SIGTERM);
 use KVMadm::Config;
 
 #SMF constants
@@ -23,7 +24,20 @@ my %SMF_STATUS = (
 
 my $RUN_PATH = '/var/run/kvm';
 my $FMRI     = 'svc:/system/kvm';
+my $ACPI_TO  = 120;
 
+my $acpiShutdown = sub {
+    my $name = shift;
+
+    my $sock = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM,
+        Peer => $RUN_PATH . '/' . $name . '.monitor',
+    ) || do {
+        print "Cannot open socket $!\n";
+        exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+    };
+    print $sock "system_powerdown\n";
+};
 
 # check if FMRI is set
 $ENV{SMF_FMRI} || do {
@@ -49,7 +63,7 @@ for (shift){
             local $SIG{__DIE__};
             @cmdArray = @{$config->getKVMCmdArray($kvmName)};
         };
-        if($@){
+        if ($@){
             print "$@\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
@@ -62,14 +76,58 @@ for (shift){
     };
 
     /^stop$/ && do {
-        my $sock = IO::Socket::UNIX->new(
-            Type => SOCK_STREAM,
-            Peer => $RUN_PATH . '/' . $kvmName . '.monitor',
-        ) || do {
-            print "Cannot open socket $!\n";
+        my $config = KVMadm::Config->new();
+        my $shutdownType;
+
+        local $@;
+        eval {
+            local $SIG{__DIE__};
+            $shutdownType = $config->getKVMShutdown($kvmName);
+        };
+        if ($@){
+            print "$@\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
+        }
+        
+        for ($shutdownType){
+            /^acpi$/ && do {
+                $acpiShutdown->($kvmName);
+
+                last;
+            };
+
+            open my $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid' or do {
+                print "Cannot open pid file\n";
+                exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+            };
+
+            chomp (my $pid = <$pidFile>);
+            close $pidFile;
+
+            /^acpi_kill$/ && do {
+                $acpiShutdown->($kvmName);
+
+                my $counter = $ACPI_TO;
+                while ($counter--){
+                    sleep 1;
+                    kill (0, $pid) || exit $SMF_STATUS{SMF_EXIT_OK};
+                }
+
+                kill SIGTERM, $pid;
+                
+                last;
+            };
+
+            /^kill$/ && do {
+                kill SIGTERM, $pid;
+
+                last;
+            };
+
+            #should never reach here
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
         };
-        print $sock "system_powerdown\n";
+
         last;
     };
 

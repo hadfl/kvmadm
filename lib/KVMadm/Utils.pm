@@ -23,6 +23,12 @@ my %diskCacheOptions = (
     writethrough => undef,
 );
 
+my %shutdownOptions = (
+    acpi        => undef,
+    kill        => undef,
+    acpi_kill   => undef,
+);
+
 # public methods
 sub boolean {
     return shift =~ /^(?:true|false)$/i;
@@ -151,6 +157,11 @@ sub serial_tag {
     return 1 if alphanumeric($tag) && $tag !~ /^(?:pid|vnc|monitor)$/;
 }
 
+sub shutdown_type {
+    my $shutdownType = shift;
+    return exists $shutdownOptions{$shutdownType}
+}
+
 1;
 
 __END__
@@ -224,6 +235,10 @@ checks if a cpu_type is supported by qemu
 =head2 vnc
 
 checks if the argument is either numeric or 'sock'
+
+=head2 shutdown_type
+
+checks if the argument is a valid schutdown type
 
 =head1 COPYRIGHT
 

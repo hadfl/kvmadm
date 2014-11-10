@@ -60,6 +60,7 @@ my $kvmProperties = {
         hpet        => \&KVMadm::Utils::boolean,
         usb_tablet  => \&KVMadm::Utils::boolean,
         cpu_type    => \&KVMadm::Utils::cpu_type,
+        shutdown    => \&KVMadm::Utils::shutdown_type,
     },
     sections  => {
         #section names must end with an 's'
@@ -343,6 +344,17 @@ sub getKVMCmdArray {
     return \@cmdArray;
 }
 
+sub getKVMShutdown {
+    my $self = shift;
+    my $kvmName = shift;
+
+    my $config = $self->readConfig($kvmName);
+    $self->checkConfig($config);
+
+    return $config->{shutdown} // 'acpi';
+}
+
+
 1;
 
 __END__
@@ -389,6 +401,14 @@ reads a KVM property set from SMF
 =head2 listKVM
 
 returns a list of instances and their property set from SMF
+
+=head2 getKVMCmdArray
+
+returns the qemu command array
+
+=head2 getKVMShutdown
+
+returns the shutdown mechanism for a KVM instance. defaults to 'acpi'
 
 =head1 COPYRIGHT
 
