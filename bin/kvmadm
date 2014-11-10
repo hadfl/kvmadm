@@ -6,12 +6,13 @@ use lib "$FindBin::Bin/../lib";
 use strict;
 use warnings;
 
-use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
 use File::Temp qw(tempfile);
 use JSON::PP;
 use KVMadm::Config;
+use Illumos::SMF;
 
+my $FMRI = 'svc:/system/kvm';
 my $opts = {};
 my $kvmConfig;
 
@@ -73,36 +74,38 @@ sub main {
     my $mainOpt = shift;
     defined $mainOpt or pod2usage(1);
 
-    GetOptions($opts, qw(debug|d f=s)) or exit 1;
-    $kvmConfig = KVMadm::Config->new(debug => $opts->{debug});
+    $kvmConfig = KVMadm::Config->new();
 
     for ($mainOpt){
         /^create$/ && do {
-            my $kvmName;
-            my $config;
+            my $kvmName = shift @ARGV;
+            my $config = $kvmConfig->getTemplate;
 
-            if ($opts->{f}){
-                -f $opts->{f} or die 'ERROR: file ' . $opts->{f} . " does not exist\n";
+            defined $kvmName or pod2usage(1);
+            my $smf = Illumos::SMF->new();
+            $smf->fmriExists($FMRI . ':' . $kvmName)
+                && die "ERROR: instance '$kvmName' already exists. use 'edit' to change properties\n";
 
-                open my $fh, '<', $opts->{f} or die 'ERROR: open file ' . $opts->{f} . ":$!\n";
-                my $configJSON = do { local $/; <$fh>; };
-                close $fh;
-
-                $config = JSON::PP->new->decode($configJSON);
-
-                for my $kvm (keys %$config){
-                    writeConfig($kvm, $config->{$kvm});
-                }
-            }
-            else {
-                $kvmName = shift @ARGV;
-                defined $kvmName or pod2usage(1);
-                $config = $kvmConfig->getTemplate;
-
-                writeConfig($kvmName, $config);
-            }
+            writeConfig($kvmName, $config);
             
             last; 
+        };
+        /^import$/ && do {
+            my $fileName = shift @ARGV;
+
+            open my $fh, '<', $fileName or die 'ERROR: open file ' . $fileName . ":$!\n";
+            my $configJSON = do { local $/; <$fh>; };
+            close $fh;
+
+            my $config = JSON::PP->new->decode($configJSON);
+            my $smf = Illumos::SMF->new();
+            for my $kvm (keys %$config){
+                $smf->fmriExists($FMRI . ':' . $kvm)
+                    && die "ERROR: instance '$kvm' already exists. use 'edit' to change properties\n";
+                writeConfig($kvm, $config->{$kvm});
+            }
+
+            last;
         };
         /^edit$/ && do {
             my $kvmName = shift @ARGV;
@@ -158,7 +161,9 @@ B<kvmadm> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [-f <filename>] <kvm_name>
+    create <kvm_name>
+
+    import <filename>
 
     delete <kvm_name>
 
@@ -226,6 +231,10 @@ for each serial the following properties can be set:
     serial_name
     index
 
+=head2 B<import>
+
+imports a KVM configuration from a file.
+
 =head2 B<delete>
 
 deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
@@ -259,7 +268,7 @@ copy a KVM instance
 
     kvmadm list test-kvm > test-kvm.json
 
-    kvmadm create -f test-kvm.json
+    kvmadm import test-kvm.json
 
 =head1 COPYRIGHT
 
