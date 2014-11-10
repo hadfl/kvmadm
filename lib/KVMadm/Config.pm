@@ -61,6 +61,7 @@ my $kvmProperties = {
         usb_tablet  => \&KVMadm::Utils::boolean,
         cpu_type    => \&KVMadm::Utils::cpu_type,
         shutdown    => \&KVMadm::Utils::shutdown_type,
+        cleanup     => \&KVMadm::Utils::boolean,
     },
     sections  => {
         #section names must end with an 's'
@@ -351,7 +352,7 @@ sub getKVMShutdown {
     my $config = $self->readConfig($kvmName);
     $self->checkConfig($config);
 
-    return $config->{shutdown} // 'acpi';
+    return ($config->{cleanup} && $config->{cleanup} eq 'true', $config->{shutdown} // 'acpi');
 }
 
 

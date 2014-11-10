@@ -191,6 +191,7 @@ for the KVM instance the following properties can be set:
      hpet
      usb_tablet
      shutdown
+     cleanup
 
 for each disk the following properties can be set:
 

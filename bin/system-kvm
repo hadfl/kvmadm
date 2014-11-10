@@ -25,6 +25,7 @@ my %SMF_STATUS = (
 my $RUN_PATH = '/var/run/kvm';
 my $FMRI     = 'svc:/system/kvm';
 my $ACPI_TO  = 120;
+my $KILL_TO  = 60;
 
 my $acpiShutdown = sub {
     my $name = shift;
@@ -37,6 +38,20 @@ my $acpiShutdown = sub {
         exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
     };
     print $sock "system_powerdown\n";
+};
+
+my $cleanupRunPath = sub {
+    my $name = shift;
+    my $pid  = shift;
+
+    my $counter = $KILL_TO;
+    while($counter--){
+        kill (0, $pid) || do {
+            unlink glob $RUN_PATH . '/' . $name . '.*';
+            last;
+        };
+        sleep 1;
+    }
 };
 
 # check if FMRI is set
@@ -78,11 +93,19 @@ for (shift){
     /^stop$/ && do {
         my $config = KVMadm::Config->new();
         my $shutdownType;
+        my $cleanup;
+
+        open my $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid' or do {
+            print "Cannot open pid file\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+        };
+        chomp (my $pid = <$pidFile>);
+        close $pidFile;
 
         local $@;
         eval {
             local $SIG{__DIE__};
-            $shutdownType = $config->getKVMShutdown($kvmName);
+            ($cleanup, $shutdownType) = $config->getKVMShutdown($kvmName);
         };
         if ($@){
             print "$@\n";
@@ -92,17 +115,9 @@ for (shift){
         for ($shutdownType){
             /^acpi$/ && do {
                 $acpiShutdown->($kvmName);
-
+                $cleanup && $cleanupRunPath->($kvmName, $pid);
                 last;
             };
-
-            open my $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid' or do {
-                print "Cannot open pid file\n";
-                exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
-            };
-
-            chomp (my $pid = <$pidFile>);
-            close $pidFile;
 
             /^acpi_kill$/ && do {
                 $acpiShutdown->($kvmName);
@@ -110,17 +125,20 @@ for (shift){
                 my $counter = $ACPI_TO;
                 while ($counter--){
                     sleep 1;
-                    kill (0, $pid) || exit $SMF_STATUS{SMF_EXIT_OK};
+                    kill (0, $pid) || do {
+                        $cleanup && $cleanupRunPath->($kvmName, $pid); 
+                        exit $SMF_STATUS{SMF_EXIT_OK};
+                    };
                 }
 
                 kill SIGTERM, $pid;
-                
+                $cleanup && $cleanupRunPath->($kvmName, $pid); 
                 last;
             };
 
             /^kill$/ && do {
                 kill SIGTERM, $pid;
-
+                $cleanup && $cleanupRunPath->($kvmName, $pid); 
                 last;
             };
 
