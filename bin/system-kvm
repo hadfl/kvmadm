@@ -62,14 +62,40 @@ for (shift){
     };
 
     /^stop$/ && do {
+        #get the qemu pid
+        open PIDFILE,  $RUN_PATH . '/' . $kvmName . '.pid' || do {
+            print "Cannot read pid $!\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+        };
+        my @qemu_pid = <PIDFILE>;
+        chomp(@qemu_pid);
+        my $qemu_pid = $qemu_pid[0];
+        close PIDFILE;
+
+        #acpi shutdown
+        my $have_sock = 1;
         my $sock = IO::Socket::UNIX->new(
             Type => SOCK_STREAM,
             Peer => $RUN_PATH . '/' . $kvmName . '.monitor',
-        ) || do {
-            print "Cannot open socket $!\n";
-            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
-        };
-        print $sock "system_powerdown\n";
+	) || do { $have_sock = 0 };
+        if ($have_sock) {
+            print $sock "system_powerdown\n";
+            my $counter = 90;
+            #wait for 90 seconds
+            while ($counter){
+                sleep 1 if (kill 0, $qemu_pid);
+                $counter--;
+            }  
+        } else {
+            print "Failed to send acpi shutdown!\n";
+        }
+
+        #kill the process
+        kill 15, $qemu_pid if (kill 0, $qemu_pid);
+
+        #cleanup
+        unlink glob $RUN_PATH . '/' . $kvmName . '.*';
+
         last;
     };
 
