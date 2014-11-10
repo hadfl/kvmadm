@@ -13,6 +13,7 @@ my %vcpuOptions = (
     sockets => 1,
     cores   => 1,
     threads => 1,
+    maxcpus => 1,
 );    
 
 # public methods
@@ -102,6 +103,8 @@ sub vcpu {
     return 1 if numeric($vcpu);
 
     my @vcpu = split ',', $vcpu;
+
+    shift @vcpu if numeric($vcpu[0]);
     
     for my $vcpuConf (@vcpu){
         my @vcpuConf = split '=', $vcpuConf, 2;
