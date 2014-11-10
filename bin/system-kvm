@@ -25,7 +25,6 @@ my %SMF_STATUS = (
 my $RUN_PATH = '/var/run/kvm';
 my $FMRI     = 'svc:/system/kvm';
 my $ACPI_TO  = 120;
-my $KILL_TO  = 60;
 
 my $acpiShutdown = sub {
     my $name = shift;
@@ -44,7 +43,7 @@ my $cleanupRunPath = sub {
     my $name = shift;
     my $pid  = shift;
 
-    my $counter = $KILL_TO;
+    my $counter = $ACPI_TO;
     while($counter--){
         kill (0, $pid) || do {
             unlink glob $RUN_PATH . '/' . $name . '.*';
