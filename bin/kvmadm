@@ -16,8 +16,7 @@ my $opts = {};
 my $kvmConfig;
 
 sub editConfig {
-    my $config = shift;
-    my $configJSON = JSON::PP->new->pretty->encode($config);
+    my $configJSON = shift;
 
     my ($fh, $filename) = tempfile();
     print $fh "$configJSON\n";
@@ -35,12 +34,13 @@ sub editConfig {
     $modified = (stat $filename)[9] != $modified;
     unlink $filename;
 
-    return ($modified, JSON::PP->new->decode($configJSON));
+    return ($modified, $configJSON);
 }
 
 sub writeConfig {
     my $kvmName = shift;
     my $config = shift;
+    my $configJSON = JSON::PP->new->pretty->encode($config);
 
     my $configValid = 0;
 
@@ -48,7 +48,9 @@ sub writeConfig {
         local $@;
         eval {
             local $SIG{__DIE__};
-            (my $modified, $config) = editConfig($config);
+
+            (my $modified, $configJSON) = editConfig($configJSON);
+            $config = JSON::PP->new->decode($configJSON);
 
             return if !$modified;
 
