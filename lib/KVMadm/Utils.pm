@@ -121,7 +121,7 @@ sub vnc {
 sub serial_tag {
     my $tag = shift;
 
-    return 1 if alphanumeric($tag) && $tag !~ /pid|vnc|monitor/;
+    return 1 if alphanumeric($tag) && $tag !~ /^(?:pid|vnc|monitor)$/;
 }
 
 1;
