@@ -278,7 +278,7 @@ sub getKVMCmdArray {
 
     my @cmdArray = ($QEMU_KVM);
     push @cmdArray, ('-name', $kvmName);
-    push @cmdArray, qw(-enable-kvm -vga std);
+    push @cmdArray, '-enable-kvm';
     push @cmdArray, '-no-hpet' if !exists $config->{hpet} || $config->{hpet} !~ /^true$/i;
     push @cmdArray, ('-m', $config->{ram} // '1024');
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
@@ -288,14 +288,14 @@ sub getKVMCmdArray {
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
 
     if (!defined $config->{vnc}){
-        push @cmdArray, '-nographic';
+        push @cmdArray, qw(-vga none -nographic);
     }
     elsif ($config->{vnc} =~ /^sock(?:et)?$/i){
-        push @cmdArray, ('-vnc', 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
+        push @cmdArray, (qw(-vga std -vnc), 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
     }
     else{
         $config->{vnc} -= 5900 if $config->{vnc} >= 5900;
-        push @cmdArray, ('-vnc', '0.0.0.0:' . $config->{vnc} . ',console');
+        push @cmdArray, (qw(-vga std -vnc), '0.0.0.0:' . $config->{vnc} . ',console');
     }
 
     for my $disk (@{$config->{disks}}){
