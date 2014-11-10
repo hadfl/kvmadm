@@ -50,9 +50,9 @@ my $kvmTemplate = {
 
 my $kvmProperties = {
     mandatory => {
-        vnc         => \&KVMadm::Utils::vnc,
     },
     optional  => {
+        vnc         => \&KVMadm::Utils::vnc,
         vcpus       => \&KVMadm::Utils::vcpu,
         ram         => \&KVMadm::Utils::numeric,
         time_base   => \&KVMadm::Utils::time_base,
@@ -287,7 +287,10 @@ sub getKVMCmdArray {
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
 
-    if ($config->{vnc} =~ /^sock(?:et)?$/i){
+    if (!defined $config->{vnc}){
+        push @cmdArray, '-nographic';
+    }
+    elsif ($config->{vnc} =~ /^sock(?:et)?$/i){
         push @cmdArray, ('-vnc', 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
     }
     else{
