@@ -202,6 +202,7 @@ for each disk the following properties can be set:
      boot
      media
      disk_size
+     cache
 
 for each vnic the following properties can be set:
 

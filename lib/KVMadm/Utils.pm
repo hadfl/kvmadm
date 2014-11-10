@@ -11,11 +11,17 @@ my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
 
 my %vcpuOptions = (
-    sockets => 1,
-    cores   => 1,
-    threads => 1,
-    maxcpus => 1,
+    sockets => undef,
+    cores   => undef,
+    threads => undef,
+    maxcpus => undef,
 );    
+
+my %diskCacheOptions = (
+    none         => undef,
+    writeback    => undef,
+    writethrough => undef,
+);
 
 # public methods
 sub boolean {
@@ -61,6 +67,11 @@ sub disk_media {
 
 sub disk_size {
     return shift =~ /^\d+[bkmgtp]$/i;
+}
+
+sub disk_cache {
+    my $diskCache = shift;
+    return exists $diskCacheOptions{$diskCache};
 }
 
 sub nic_tag {
@@ -186,6 +197,10 @@ checks if the disk media is 'disk' or 'cdrom'
 
 checks if the disk size is valid
 
+=head2 disk_cache
+
+checks if the argument is a valid disk cache option
+
 =head2 nic_tag
 
 checks if a vnic exists, tires to create it if not
@@ -206,7 +221,7 @@ checks if a vcpu setting is valid
 
 checks if a cpu_type is supported by qemu
 
-=head vnc
+=head2 vnc
 
 checks if the argument is either numeric or 'sock'
 

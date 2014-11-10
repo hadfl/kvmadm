@@ -73,6 +73,7 @@ my $kvmProperties = {
                 boot        => \&KVMadm::Utils::boolean,
                 media       => \&KVMadm::Utils::disk_media,
                 disk_size   => \&KVMadm::Utils::disk_size,
+                cache       => \&KVMadm::Utils::disk_cache,
             },
         },
         nics    => {
@@ -302,6 +303,7 @@ sub getKVMCmdArray {
             . ',if='    . ($disk->{model} // 'ide')
             . ',media=' . ($disk->{media} // 'disk')
             . ',index=' . $disk->{index}
+            . ',cache=' . ($disk->{cache} // 'none')
             . ($disk->{boot} ? ',boot=on' : ''));
     }
     push @cmdArray, ('-boot', 'order=' . ($config->{boot_order} ? $config->{boot_order} : 'cd'));
