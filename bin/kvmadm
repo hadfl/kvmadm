@@ -16,6 +16,18 @@ my $FMRI = 'svc:/system/kvm';
 my $opts = {};
 my $kvmConfig;
 
+sub gen_uuid_v4 {
+    my $uuid = '';
+    for (1 .. 4) {
+        $uuid .= pack 'I', (int(rand(65536)) % 65536 << 16) | int(rand(65536)) % 65536;
+    }
+    #set variant to 2
+    substr $uuid, 8, 1, chr(ord(substr $uuid, 8, 1) & 0x3f | 0x02 << 6);
+    #set version to 4
+    substr $uuid, 6, 1, chr(ord(substr $uuid, 6, 1) & 0x0f | 0x04 << 4);
+    return join '-', map { unpack 'H*', $_ } map { substr $uuid, 0, $_, '' } qw(4 2 2 2 6);
+}
+
 sub editConfig {
     my $configJSON = shift;
 
@@ -80,6 +92,8 @@ sub main {
         /^create$/ && do {
             my $kvmName = shift @ARGV;
             my $config = $kvmConfig->getTemplate;
+            #generate a random uuid
+            $config->{uuid} = gen_uuid_v4();
 
             defined $kvmName or pod2usage(1);
             my $smf = Illumos::SMF->new();
