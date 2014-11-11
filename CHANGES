@@ -1,3 +1,45 @@
+commit bb095b808119ab8654b5a399942836d8c75faab2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 11 13:02:43 2014 +0100
+
+    - generate a random uuid on creation
+
+commit fac0f3575bc508aa614c78581d42a92ef230ce79
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 11 10:43:19 2014 +0100
+
+    - uuid option added
+
+commit 70fb8e9b32b9501662ac743a44a955ec5145a81f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 23:25:44 2014 +0100
+
+    - vga none when nographic
+
+commit cb605a0e8dfd2d8af13bfea4e81a8ca5b01adaed
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 23:16:36 2014 +0100
+
+    - vnc is now optional
+
+commit f994cc16298d9b9a49f7dce85db3b07ef7f7cb1f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 19:47:35 2014 +0100
+
+    - import added. create checks if instance already exists
+
+commit 6c1a14047ea98e0ea6f49986f292ba2ab7fdef69
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 18:54:32 2014 +0100
+
+    - config retry includes JSON parsing
+
+commit aabfb2755b32d67cbb02f3f5ea8c3114c3190240
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 10 16:09:49 2014 +0100
+
+    getting ready for 0.4.0
+
 commit 68d08c762763dece40116e28fd20308649516476
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Nov 10 15:58:08 2014 +0100

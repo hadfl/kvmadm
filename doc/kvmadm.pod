@@ -8,7 +8,9 @@ B<kvmadm> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [-f <filename>] <kvm_name>
+    create <kvm_name>
+
+    import <filename>
 
     delete <kvm_name>
 
@@ -32,16 +34,15 @@ exist will be created.
 
 for the KVM instance the following properties can be set:
 
- mandatory
-    vnc
-
  optional
+     vnc
      vcpus
      ram
      time_base
      boot_order
      hpet
      usb_tablet
+     uuid
      shutdown
      cleanup
 
@@ -76,6 +77,10 @@ for each serial the following properties can be set:
     serial_name
     index
 
+=head2 B<import>
+
+imports a KVM configuration from a file.
+
 =head2 B<delete>
 
 deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
@@ -109,7 +114,7 @@ copy a KVM instance
 
     kvmadm list test-kvm > test-kvm.json
 
-    kvmadm create -f test-kvm.json
+    kvmadm import test-kvm.json
 
 =head1 COPYRIGHT
 

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2014-11-10" "0.4.0" "kvmadm"
+.TH KVMADM 1 "2014-11-11" "0.4.2" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -138,7 +138,9 @@ kvmadm \- Manage KVMs under SMF control
 where 'command' is one of the following:
 .PP
 .Vb 1
-\&    create [\-f <filename>] <kvm_name>
+\&    create <kvm_name>
+\&
+\&    import <filename>
 \&
 \&    delete <kvm_name>
 \&
@@ -161,17 +163,16 @@ exist will be created.
 .PP
 for the \s-1KVM\s0 instance the following properties can be set:
 .PP
-.Vb 2
-\& mandatory
-\&    vnc
-\&
+.Vb 11
 \& optional
+\&     vnc
 \&     vcpus
 \&     ram
 \&     time_base
 \&     boot_order
 \&     hpet
 \&     usb_tablet
+\&     uuid
 \&     shutdown
 \&     cleanup
 .Ve
@@ -212,6 +213,9 @@ for each serial the following properties can be set:
 \&    serial_name
 \&    index
 .Ve
+.SS "\fBimport\fP"
+.IX Subsection "import"
+imports a \s-1KVM\s0 configuration from a file.
 .SS "\fBdelete\fP"
 .IX Subsection "delete"
 deletes the \s-1KVM\s0 instance with the name \fBkvm_name\fR. Note: zvols and vnics will
@@ -249,7 +253,7 @@ copy a \s-1KVM\s0 instance
 .Vb 1
 \&    kvmadm list test\-kvm > test\-kvm.json
 \&
-\&    kvmadm create \-f test\-kvm.json
+\&    kvmadm import test\-kvm.json
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
