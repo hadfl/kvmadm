@@ -209,6 +209,7 @@ for the KVM instance the following properties can be set:
      boot_order
      hpet
      usb_tablet
+     kb_layout
      uuid
      shutdown
      cleanup
