@@ -60,7 +60,7 @@ $ENV{SMF_FMRI} || do {
 };
 
 # check if run directory exists
--d $RUN_PATH || mkdir($RUN_PATH) || do {
+-d $RUN_PATH || mkdir($RUN_PATH, 0700) || do {
     print "Cannot create directory $RUN_PATH\n";
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
 };
