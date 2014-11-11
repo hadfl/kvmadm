@@ -59,6 +59,7 @@ my $kvmProperties = {
         boot_order  => \&KVMadm::Utils::alphanumeric,
         hpet        => \&KVMadm::Utils::boolean,
         usb_tablet  => \&KVMadm::Utils::boolean,
+        uuid        => \&KVMadm::Utils::uuid,
         cpu_type    => \&KVMadm::Utils::cpu_type,
         shutdown    => \&KVMadm::Utils::shutdown_type,
         cleanup     => \&KVMadm::Utils::boolean,
@@ -286,6 +287,7 @@ sub getKVMCmdArray {
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
     push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
+    push @cmdArray, ('-uuid', $config->{uuid}) if $config->{uuid};
 
     if (!defined $config->{vnc}){
         push @cmdArray, qw(-vga none -nographic);

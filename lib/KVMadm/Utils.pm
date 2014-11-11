@@ -162,6 +162,10 @@ sub shutdown_type {
     return exists $shutdownOptions{$shutdownType}
 }
 
+sub uuid {
+    return shift =~ /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+}
+
 1;
 
 __END__
@@ -239,6 +243,10 @@ checks if the argument is either numeric or 'sock'
 =head2 shutdown_type
 
 checks if the argument is a valid schutdown type
+
+=head2 uuid
+
+checks if a uuid is valid
 
 =head1 COPYRIGHT
 

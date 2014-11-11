@@ -187,16 +187,15 @@ exist will be created.
 
 for the KVM instance the following properties can be set:
 
- mandatory
-    vnc
-
  optional
+     vnc
      vcpus
      ram
      time_base
      boot_order
      hpet
      usb_tablet
+     uuid
      shutdown
      cleanup
 
