@@ -36,12 +36,14 @@ for the KVM instance the following properties can be set:
 
  optional
      vnc
+     vnc_pw_file
      vcpus
      ram
      time_base
      boot_order
      hpet
      usb_tablet
+     kb_layout
      uuid
      shutdown
      cleanup

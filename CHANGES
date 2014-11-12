@@ -1,3 +1,34 @@
+commit 42e0b7bd097758e4b01ab29e39fb16eaf9257877
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 12 13:01:44 2014 +0100
+
+    - password support for VNC added
+
+commit bd96f4423982a873f05075783f0d32ea0d920929
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 12 11:02:47 2014 +0100
+
+    - vnc can be bound to an IP address now
+
+commit 511dc351a6988e32fe21893f3276a52e98d0309e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 11 23:35:01 2014 +0100
+
+    - kb_layout option added
+
+commit 5dedd39fe1ba406dfe9449205059c9c737b81ac0
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 11 21:38:40 2014 +0100
+
+    - set directory permissions properly
+      (prevent unprivileged users from accessing sockets)
+
+commit f2c1d53756916cfae1ad34212daded757a69819c
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 11 13:19:47 2014 +0100
+
+    getting ready for v0.4.2
+
 commit bb095b808119ab8654b5a399942836d8c75faab2
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Nov 11 13:02:43 2014 +0100
