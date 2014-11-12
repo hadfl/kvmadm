@@ -298,8 +298,9 @@ sub getKVMCmdArray {
         push @cmdArray, (qw(-vga std -vnc), 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
     }
     else{
-        $config->{vnc} -= 5900 if $config->{vnc} >= 5900;
-        push @cmdArray, (qw(-vga std -vnc), '0.0.0.0:' . $config->{vnc} . ',console');
+        my ($ip, $port) = $config->{vnc} =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
+        $port -= 5900 if $port >= 5900;
+        push @cmdArray, (qw(-vga std -vnc), ($ip ? "$ip:" : '127.0.0.1:') . $port . ',console');
     }
 
     for my $disk (@{$config->{disks}}){
