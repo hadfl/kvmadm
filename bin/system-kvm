@@ -26,8 +26,9 @@ my $RUN_PATH = '/var/run/kvm';
 my $FMRI     = 'svc:/system/kvm';
 my $ACPI_TO  = 120;
 
-my $acpiShutdown = sub {
+my $sendMonitor = sub {
     my $name = shift;
+    my $msg  = shift;
 
     my $sock = IO::Socket::UNIX->new(
         Type => SOCK_STREAM,
@@ -36,7 +37,16 @@ my $acpiShutdown = sub {
         print "Cannot open socket $!\n";
         exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
     };
-    print $sock "system_powerdown\n";
+    print $sock $msg;
+    $sock->close();
+};
+
+my $setVNCpassword = sub {
+    $sendMonitor->(shift, 'set_password vnc ' . shift . "\n");
+};
+
+my $acpiShutdown = sub {
+    $sendMonitor->(shift, "system_powerdown\n");
 };
 
 my $cleanupRunPath = sub {
@@ -71,11 +81,13 @@ for (shift){
     /^start$/ && do {
         my $config = KVMadm::Config->new();
         my @cmdArray;
+        my $password;
 
         local $@;
         eval {
             local $SIG{__DIE__};
             @cmdArray = @{$config->getKVMCmdArray($kvmName)};
+            $password = $config->getVNCPassword($kvmName);
         };
         if ($@){
             print "$@\n";
@@ -86,6 +98,7 @@ for (shift){
             print "Cannot run KVM $kvmName\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
         };
+        $password && $setVNCpassword->($kvmName, $password);
         last;
     };
 

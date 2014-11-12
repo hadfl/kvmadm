@@ -167,6 +167,18 @@ sub vnc {
     return numeric($port) && grep { $ip eq $_ } @ips;
 }
 
+sub vnc_pw_file {
+    my $pwFile = shift;
+
+    -f $pwFile || die "ERROR: vnc password file '$pwFile' does not exist\n";
+
+    open my $fh, '<', $pwFile or die "ERROR: cannot open vnc password file $pwFile: $!\n";
+    chomp(my $password = do { local $/; <$fh>; });
+    close $fh;
+
+    return length($password) <= 8;
+}
+
 sub serial_name {
     my $name = shift;
 
@@ -255,6 +267,10 @@ checks if a cpu_type is supported by qemu
 =head2 vnc
 
 checks if the argument is either numeric or 'sock'
+
+=head2 vnc_pw_file
+
+checks if the file exists and contains a pw which is <= 8 characters long
 
 =head2 shutdown_type
 

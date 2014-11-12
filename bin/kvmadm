@@ -203,6 +203,7 @@ for the KVM instance the following properties can be set:
 
  optional
      vnc
+     vnc_pw_file
      vcpus
      ram
      time_base
