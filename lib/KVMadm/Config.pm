@@ -53,6 +53,7 @@ my $kvmProperties = {
     },
     optional  => {
         vnc         => \&KVMadm::Utils::vnc,
+        vnc_pw_file => \&KVMadm::Utils::vnc_pw_file,
         vcpus       => \&KVMadm::Utils::vcpu,
         ram         => \&KVMadm::Utils::numeric,
         time_base   => \&KVMadm::Utils::time_base,
@@ -295,11 +296,14 @@ sub getKVMCmdArray {
         push @cmdArray, qw(-vga none -nographic);
     }
     elsif ($config->{vnc} =~ /^sock(?:et)?$/i){
-        push @cmdArray, (qw(-vga std -vnc), 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'); 
+        push @cmdArray, (qw(-vga std -vnc), 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'
+            . ($config->{vnc_pw_file} ? ',password' : '')); 
     }
     else{
-        $config->{vnc} -= 5900 if $config->{vnc} >= 5900;
-        push @cmdArray, (qw(-vga std -vnc), '0.0.0.0:' . $config->{vnc} . ',console');
+        my ($ip, $port) = $config->{vnc} =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
+        $port -= 5900 if $port >= 5900;
+        push @cmdArray, (qw(-vga std -vnc), ($ip ? "$ip:" : '127.0.0.1:') . $port . ',console'
+            . ($config->{vnc_pw_file} ? ',password' : '')); 
     }
 
     for my $disk (@{$config->{disks}}){
@@ -362,6 +366,22 @@ sub getKVMShutdown {
     return ($config->{cleanup} && $config->{cleanup} eq 'true', $config->{shutdown} // 'acpi');
 }
 
+sub getVNCPassword {
+    my $self = shift;
+    my $kvmName = shift;
+
+    my $config = $self->readConfig($kvmName);
+    $self->checkConfig($config);
+
+    return undef if !exists $config->{vnc_pw_file};
+
+    open my $fh, '<', $config->{vnc_pw_file}
+        or die 'ERROR: cannot open vnc password file ' . $config->{vnc_pw_file} . ": $!\n";
+    chomp(my $password = do { local $/; <$fh>; });
+    close $fh;
+
+    return $password;
+}
 
 1;
 
@@ -417,6 +437,10 @@ returns the qemu command array
 =head2 getKVMShutdown
 
 returns the shutdown mechanism for a KVM instance. defaults to 'acpi'
+
+=head2 getVNCPassword
+
+returns the VNC password
 
 =head1 COPYRIGHT
 

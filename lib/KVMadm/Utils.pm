@@ -9,6 +9,7 @@ my $FMRI     = 'svc:/system/kvm';
 my $ZFS      = '/usr/sbin/zfs';
 my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
+my $IFCONFIG = '/usr/sbin/ifconfig';
 
 my %vcpuOptions = (
     sockets => undef,
@@ -148,7 +149,34 @@ sub cpu_type {
 sub vnc {
     my $vnc = shift;
 
-    return numeric($vnc) || $vnc =~ /^sock(?:et)?$/i;
+    return 1 if $vnc =~ /^sock(?:et)?$/i;
+
+    my ($ip, $port) = $vnc =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
+    $ip //= '127.0.0.1';
+    return 0 if !defined $port;
+
+    my @ips = qw(0.0.0.0);
+    open my $inetAddr, '-|', $IFCONFIG or die "ERROR: cannot get IP addresses\n";
+    while (<$inetAddr>){
+        chomp;
+        next if !/inet\s+(\d{1,3}(?:\.\d{1,3}){3})/;
+        push @ips, $1;
+    };
+    close $inetAddr;
+
+    return numeric($port) && grep { $ip eq $_ } @ips;
+}
+
+sub vnc_pw_file {
+    my $pwFile = shift;
+
+    -f $pwFile || die "ERROR: vnc password file '$pwFile' does not exist\n";
+
+    open my $fh, '<', $pwFile or die "ERROR: cannot open vnc password file $pwFile: $!\n";
+    chomp(my $password = do { local $/; <$fh>; });
+    close $fh;
+
+    return length($password) <= 8;
 }
 
 sub serial_name {
@@ -239,6 +267,10 @@ checks if a cpu_type is supported by qemu
 =head2 vnc
 
 checks if the argument is either numeric or 'sock'
+
+=head2 vnc_pw_file
+
+checks if the file exists and contains a pw which is <= 8 characters long
 
 =head2 shutdown_type
 
