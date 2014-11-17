@@ -16,6 +16,9 @@ my $FMRI = 'svc:/system/kvm';
 my $opts = {};
 my $kvmConfig;
 
+#fix perldoc pager if not set
+$ENV{PERLDOC_PAGER} ||= '/usr/bin/less -rins' if -x '/usr/bin/less';
+
 sub gen_uuid_v4 {
     my $uuid = '';
     for (1 .. 4) {
