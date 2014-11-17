@@ -44,7 +44,7 @@ sub alphanumeric {
 }
 
 sub disk_model {
-    return grep { $_[0] eq $_ } qw(ide virtio);
+    return grep { $_[0] eq $_ } qw(ide virtio scsi);
 }
 
 sub disk_path {
@@ -81,6 +81,10 @@ sub disk_cache {
     return exists $diskCacheOptions{$diskCache};
 }
 
+sub nic_model {
+    return grep { $_[0] eq $_ } qw(virtio e1000 rtl8139);
+}
+
 sub nic_name {
     my $nicName = shift;
     my $nic = shift;
@@ -104,7 +108,8 @@ sub nic_name {
             close $nics;
         };
              
-        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over}, $nicName);
+        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over},
+            $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
         print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
         system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
     };
@@ -226,7 +231,7 @@ checks if the argument is alphanumeric
 
 =head2 disk_model
 
-checks if the disk model is 'ide' or 'virtio'
+checks if the disk model is 'ide', 'scsi' or 'virtio'
 
 =head2 disk_path
 
@@ -243,6 +248,10 @@ checks if the disk size is valid
 =head2 disk_cache
 
 checks if the argument is a valid disk cache option
+
+=head2 nic_model
+
+checks if the nic model is 'virtio', 'e1000' or 'rtl8139'
 
 =head2 nic_name
 

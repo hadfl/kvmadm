@@ -83,12 +83,13 @@ my $kvmProperties = {
         },
         nics    => {
             mandatory => {
-                model       => \&KVMadm::Utils::alphanumeric,
+                model       => \&KVMadm::Utils::nic_model,
                 nic_name    => \&KVMadm::Utils::nic_name,
                 index       => \&KVMadm::Utils::numeric,
             },
             optional  => {
                 over        => \&KVMadm::Utils::alphanumeric,
+                vlan_id     => \&KVMadm::Utils::numeric,
                 txtimer     => \&KVMadm::Utils::numeric,
                 txburst     => \&KVMadm::Utils::numeric,
             },
@@ -331,14 +332,14 @@ sub getKVMCmdArray {
                 . ',tx=timer'
                 . ',x-txtimer=' . ($nic->{txtimer} // $VIRTIO_TXTIMER_DEFAULT)
                 . ',x-txburst=' . ($nic->{txburst} // $VIRTIO_TXBURST_DEFAULT)
-                . ',vlan=' . $nic->{index});
+                . ',vlan=' . ($nic->{vlan_id} // '0'));
         }
         else{
-            push @cmdArray, ('-net', 'nic,vlan=' . $nic->{index} . ',name='
+            push @cmdArray, ('-net', 'nic,vlan=' . ($nic->{vlan_id} // '0') . ',name='
                 . $nic->{nic_name} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
         }
 
-        push @cmdArray, ('-net', 'vnic,vlan=' . $nic->{index} . ',name='
+        push @cmdArray, ('-net', 'vnic,vlan=' . ($nic->{vlan_id} // '0') . ',name='
             . $nic->{nic_name} . ',ifname=' . $nic->{nic_name});
     }
 
