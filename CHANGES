@@ -1,3 +1,21 @@
+commit b5c849f8b48bd3c5255613c29078b5be0604ca1e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 17 16:50:28 2014 +0100
+
+    - perldoc pager fix
+
+commit 29c169bac11f4dfe47891dda94b22652bd8c0f46
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 17 15:33:31 2014 +0100
+
+    - vlan support added
+
+commit a7e80b2ffe6249c4525a4da27870234b06b44360
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 12 17:09:24 2014 +0100
+
+    getting ready for 0.5.0
+
 commit 42e0b7bd097758e4b01ab29e39fb16eaf9257877
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Wed Nov 12 13:01:44 2014 +0100
