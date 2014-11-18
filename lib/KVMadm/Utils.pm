@@ -18,12 +18,6 @@ my %vcpuOptions = (
     maxcpus => undef,
 );    
 
-my %diskCacheOptions = (
-    none         => undef,
-    writeback    => undef,
-    writethrough => undef,
-);
-
 my %shutdownOptions = (
     acpi        => undef,
     kill        => undef,
@@ -77,8 +71,7 @@ sub disk_size {
 }
 
 sub disk_cache {
-    my $diskCache = shift;
-    return exists $diskCacheOptions{$diskCache};
+    return grep { $_[0] eq $_ } qw(none writeback writethrough);
 }
 
 sub nic_model {

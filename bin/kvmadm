@@ -73,7 +73,7 @@ sub writeConfig {
             $kvmConfig->writeConfig($kvmName, $config);
         };
         if ($@){
-            print "$@\n";
+            print $@;
             print "Do you want to retry [Y/n]? ";
             chomp(my $check = <STDIN>);
 
