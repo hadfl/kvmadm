@@ -18,12 +18,6 @@ my %vcpuOptions = (
     maxcpus => undef,
 );    
 
-my %diskCacheOptions = (
-    none         => undef,
-    writeback    => undef,
-    writethrough => undef,
-);
-
 my %shutdownOptions = (
     acpi        => undef,
     kill        => undef,
@@ -77,8 +71,7 @@ sub disk_size {
 }
 
 sub disk_cache {
-    my $diskCache = shift;
-    return exists $diskCacheOptions{$diskCache};
+    return grep { $_[0] eq $_ } qw(none writeback writethrough);
 }
 
 sub nic_model {
@@ -89,30 +82,43 @@ sub nic_name {
     my $nicName = shift;
     my $nic = shift;
 
-    my @cmd = ($DLADM, qw(show-vnic -p -o link));
+    #use string for 'link,over,vid' as perl will warn otherwise
+    my @cmd = ($DLADM, qw(show-vnic -p -o), 'link,over,vid');
 
     open my $vnics, '-|', @cmd or die "ERROR: cannot get vnics\n";
 
-    my @vnics = <$vnics>;
-    chomp(@vnics);
+    while (<$vnics>){
+        chomp;
+        my @nicProps = split ':', $_, 3;
+        next if $nicProps[0] ne $nicName;
+
+        $nic->{over} && $nic->{over} ne $nicProps[1]
+            && die "ERROR: vnic specified to be over '" . $nic->{over}
+                . "' but is over '" . $nicProps[1] . "' in fact\n";
+
+        $nic->{vlan_id} && $nic->{vlan_id} ne $nicProps[2]
+            && die "ERROR: vlan id specified to be '" . $nic->{vlan_id}
+                . "' but is '" . $nicProps[2] . "' in fact\n";
+
+        return 1;
+    };
     close $vnics;
 
-    grep { $nicName eq $_ } @vnics or do {
-        #get first physical link if over is not given
-        exists $nic->{over} || do {
-            @cmd = ($DLADM, qw(show-phys -p -o link));
+    #only reach here if vnic does not exist
+    #get first physical link if over is not given
+    exists $nic->{over} || do {
+        @cmd = ($DLADM, qw(show-phys -p -o link));
 
-            open my $nics, '-|', @cmd or die "ERROR: cannot get nics\n";
+        open my $nics, '-|', @cmd or die "ERROR: cannot get nics\n";
 
-            chomp($nic->{over}  = <$nics>);
-            close $nics;
-        };
-             
-        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over},
-            $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
-        print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
-        system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
+        chomp($nic->{over} = <$nics>);
+        close $nics;
     };
+
+    @cmd = ($DLADM, qw(create-vnic -l), $nic->{over},
+        $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
+    print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
+    system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
 
     return 1;
 }
