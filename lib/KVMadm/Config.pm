@@ -335,12 +335,12 @@ sub getKVMCmdArray {
                 . ',vlan=' . ($nic->{vlan_id} // '0'));
         }
         else{
-            push @cmdArray, ('-net', 'nic,vlan=' . ($nic->{vlan_id} // '0') . ',name='
-                . $nic->{nic_name} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
+            push @cmdArray, ('-net', 'nic,vlan=' . ($nic->{vlan_id} // '0') . ',name=net'
+                . $nic->{index} . ',model=' . $nic->{model} . ',macaddr=' . $mac);
         }
 
-        push @cmdArray, ('-net', 'vnic,vlan=' . ($nic->{vlan_id} // '0') . ',name='
-            . $nic->{nic_name} . ',ifname=' . $nic->{nic_name});
+        push @cmdArray, ('-net', 'vnic,vlan=' . ($nic->{vlan_id} // '0') . ',name=net'
+            . $nic->{index} . ',ifname=' . $nic->{nic_name});
     }
 
     for my $serial (@{$config->{serials}}){
