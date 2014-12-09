@@ -1,3 +1,29 @@
+commit dd3d198db58f421f9567d879ae31e6c227a823ab
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 9 13:28:09 2014 +0100
+
+    - nic name is 'netX'
+
+commit 4e97b43abac6b29396722919044c07bdb357da46
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 18 16:10:17 2014 +0100
+
+    - no extra newline
+    
+    - disk cache options
+
+commit 42cd98544791c28f7f2ee9ae186357f064a44b38
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 18 16:05:22 2014 +0100
+
+    - check if vlan 'over' and 'vlan_id' properties are valid
+
+commit e479a863a5686e86dc3c7a44634220fac9deff0d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Nov 17 20:22:09 2014 +0100
+
+    getting ready for 0.5.2
+
 commit b5c849f8b48bd3c5255613c29078b5be0604ca1e
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Nov 17 16:50:28 2014 +0100
