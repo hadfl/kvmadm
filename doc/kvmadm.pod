@@ -18,6 +18,8 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
+    show-cmd <kvm_name>
+
     help
 
     man
@@ -98,6 +100,10 @@ function for details.
 
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
+
+=head2 B<show-cmd>
+
+prints the kvm invocation command for debug purpose
 
 =head1 EXAMPLES
 

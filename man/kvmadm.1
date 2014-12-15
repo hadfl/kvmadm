@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2014-11-18" "0.5.4" "kvmadm"
+.TH KVMADM 1 "2014-12-15" "0.5.6" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -147,6 +147,8 @@ where 'command' is one of the following:
 \&    edit <kvm_name>
 \&
 \&    list [kvm_name]
+\&
+\&    show\-cmd <kvm_name>
 \&
 \&    help
 \&
@@ -231,6 +233,9 @@ function for details.
 .IX Subsection "list"
 lists the available \s-1KVM\s0 instances with their properties. Lists details for \fBkvm_name\fR
 is given.
+.SS "\fBshow-cmd\fP"
+.IX Subsection "show-cmd"
+prints the kvm invocation command for debug purpose
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 create a \s-1KVM\s0 instance with the name 'test\-kvm'

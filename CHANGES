@@ -1,3 +1,15 @@
+commit 7178de88918e6024e5fc89d71638f69c34dfc909
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 11:04:57 2014 +0100
+
+    - show-cmd functionality added
+
+commit b973d0d0d1f75dfd67e0b1c28441118d3ebd8c92
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 9 13:35:42 2014 +0100
+
+    getting ready for 0.5.4
+
 commit dd3d198db58f421f9567d879ae31e6c227a823ab
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Dec 9 13:28:09 2014 +0100
