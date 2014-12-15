@@ -146,6 +146,17 @@ sub main {
             print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
             last;
         };
+        /^show-cmd$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            for (@{$kvmConfig->getKVMCmdArray($kvmName)}){
+                print /^-/ ? "\n$_" : " $_";
+            }
+            print "\n";
+
+            last;
+        };
         /^man$/ && do {
             pod2usage(-exitstatus => 0, -verbose => 2);
 
@@ -187,6 +198,8 @@ where 'command' is one of the following:
     edit <kvm_name>
 
     list [kvm_name]
+
+    show-cmd <kvm_name>
 
     help
 
@@ -268,6 +281,10 @@ function for details.
 
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
+
+=head2 B<show-cmd>
+
+prints the kvm invocation command for debug purpose
 
 =head1 EXAMPLES
 
