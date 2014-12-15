@@ -57,6 +57,8 @@ sub fmriState {
     my $self = shift;
     my $fmri = shift;
 
+    $self->fmriExists($fmri) or die "ERROR: FMRI '$fmri' does not exist\n";
+
     my @cmd = ($SVCS, qw(-H -o state), $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
