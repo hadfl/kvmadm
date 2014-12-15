@@ -31,6 +31,8 @@ By default this will also install the kvmadm smf manifest in
 ```/var/svc/manifest/site``` you can disable this behavior by calling
 configure with ```--disable-svcimport``` 
 
+Check the [man page](doc/kvmadm.pod) for information about how to use kvmadm.
+
 Support and Contributions
 -------------------------
 If you find a problem with kvmadm, please open an Issue on GitHub.
