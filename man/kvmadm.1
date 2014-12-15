@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2014-12-15" "0.5.6" "kvmadm"
+.TH KVMADM 1 "2014-12-15" "0.6.0" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -149,6 +149,8 @@ where 'command' is one of the following:
 \&    list [kvm_name]
 \&
 \&    show\-cmd <kvm_name>
+\&
+\&    info <kvm_name> [type,...]
 \&
 \&    help
 \&
@@ -235,7 +237,28 @@ lists the available \s-1KVM\s0 instances with their properties. Lists details fo
 is given.
 .SS "\fBshow-cmd\fP"
 .IX Subsection "show-cmd"
-prints the kvm invocation command for debug purpose
+prints the \s-1KVM\s0 invocation command for debug purpose
+.SS "\fBinfo\fP"
+.IX Subsection "info"
+queries nformation about the running \s-1KVM\s0 instance from qemu monitor.
+.PP
+type can be one of the following:
+.PP
+.Vb 10
+\&     all
+\&     block
+\&     blockstats
+\&     chardev
+\&     cpus
+\&     kvm
+\&     network
+\&     pci
+\&     registers
+\&     qtree
+\&     usb
+\&     version
+\&     vnc
+.Ve
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 create a \s-1KVM\s0 instance with the name 'test\-kvm'

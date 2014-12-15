@@ -1,3 +1,15 @@
+commit 04f8a671d1753294d93f5fe5d069c1d2a13b3602
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 13:05:51 2014 +0100
+
+    - kvmadm info added
+
+commit fc94f6a70ea164d6f76524635fa81be4c33ac973
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 11:09:07 2014 +0100
+
+    getting ready for 0.5.6
+
 commit 7178de88918e6024e5fc89d71638f69c34dfc909
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Dec 15 11:04:57 2014 +0100
