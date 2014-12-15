@@ -53,6 +53,27 @@ sub fmriExists {
     return grep { $fmri eq $_ } @fmris;
 }
 
+sub fmriState {
+    my $self = shift;
+    my $fmri = shift;
+
+    my @cmd = ($SVCS, qw(-H -o state), $fmri);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    open my $fmris, '-|', @cmd
+        or die "ERROR: cannot get list of FMRI\n";
+
+    chomp(my $state = <$fmris>);
+
+    return $state;
+}
+
+sub fmriOnline {
+    my $self = shift;
+
+    return $self->fmriState(shift) eq 'online';
+}
+
 sub propertyExists {
     my $self = shift;
     my $fmri = shift;
@@ -235,6 +256,14 @@ lists instances of a FMRI
 
 checks if the FMRI exists
 
+=head2 fmriState
+
+returns the state of the FMRI
+
+=head2 fmriOnline
+
+checks if the FRMI is online
+
 =head2 propertyExists
 
 checks whether a property or property group exists or not
@@ -297,6 +326,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2014-12-15 had FMRI online/state added
 2014-10-03 had Initial Version
 
 =cut
