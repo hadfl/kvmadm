@@ -60,7 +60,32 @@ sub queryMonitor {
         last if $recv =~ s/\(qemu\)/\(qemu\)/g == 2;
     }
     $sock->close();
-    return [grep { $_ !~ /^(?:QEMU|\(qemu\))/ } split "\n", $recv];
+    my @info;
+    print "$recv\n";
+    for (map { /^\*?\s*(\S.*\S)\s*$/; $1 } grep { $_ !~ /^(?:QEMU|\(qemu\))/ } split /\r?\n/, $recv){
+        my ($key, $value) = split /:\s+/, $_, 2;
+        if ($value){
+            my %items;
+            while ($value){
+                $value =~ s/^\s*//;
+                #my ($item, $item2) = $value =~ /^(?:(\S+=.+?)(?:\s+\S+=)|(\S+=.+)(?:[^=()]+$|\([()]\)|$))/;
+                my ($item) = $value =~ /(\S+=\S+(?:\s+\([^()]+\))?)/;
+                #$item ||= $item2;
+                $item || do {
+                    $value =~ s/^\s*|\s*$//g;
+                    $items{$value} = '1';
+                    last;
+                };
+
+                my ($subkey, $subvalue) = split '=', $item, 2;
+                $items{$subkey} = $subvalue;
+                $value = substr $value, length($item);
+            }
+            push @info, keys %items == 1 ? {$key => $value} : {$key => \%items};
+        }
+        #push @info, $key && $value ? {$key => $value} : $key;
+    }
+    return \@info;
 }
 
 sub editConfig {
@@ -198,15 +223,15 @@ sub main {
             $smf->fmriOnline("$FMRI:$kvmName")
                 or die "ERROR: KVM instance '$kvmName' not online\n";
 
+            my $infoJSON = {};
             my @types = !$types || $types eq 'all' ? @MON_INFO : split ',', $types;
             for my $type (@types){
                 grep { $_ eq $type } @MON_INFO
                     or die "ERROR: don't know type '$type'\n";
                 
-                print "QEMU INFO $type:\n";
-                print join("\n", @{queryMonitor($kvmName, "info $type\n")});
-                print "\n\n";
+                $infoJSON->{$type} = queryMonitor($kvmName, "info $type\n");
             }
+            print JSON::PP->new->pretty->encode($infoJSON);
 
             last;
         };
