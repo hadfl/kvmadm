@@ -160,7 +160,7 @@ sub cpu_type {
     open my $inst, '-|', @cmd or die "ERROR: cannot get cpu instruction sets\n";
     chomp(my $instSet = <$inst>);
     close $inst;
-    $instSet =~ s/^amd64\s+//;
+    $instSet =~ s/^amd64:\s+//;
     my @inst = map { "+$_" } split /\s+/, $instSet;
 
     my @cpu_type = split ',', $cpu_type;
