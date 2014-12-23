@@ -10,6 +10,7 @@ my $ZFS      = '/usr/sbin/zfs';
 my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
 my $IFCONFIG = '/usr/sbin/ifconfig';
+my $ISAINFO  = '/usr/bin/isainfo';
 
 my %vcpuOptions = (
     sockets => undef,
@@ -154,7 +155,24 @@ sub cpu_type {
     chomp(@types);
     close $types;
 
-    return grep { /\[?$cpu_type\]?$/ } @types;
+    @cmd = ($ISAINFO, qw(-x));
+
+    open my $inst, '-|', @cmd or die "ERROR: cannot get cpu instruction sets\n";
+    chomp(my $instSet = <$inst>);
+    close $inst;
+    $instSet =~ s/amd64\s+//;
+    my @inst = map { "+$_" } split /\s+/, $instSet;
+
+    my @cpu_type = split ',', $cpu_type;
+
+    return 0 if !grep { /\[?$cpu_type[0]\]?$/ } @types;
+    shift @cpu_type;
+
+    for my $feature (@cpu_type){
+        return 0 if !grep { $_ eq $feature } @inst;
+    }
+
+    return 1;
 }
 
 sub vnc {
