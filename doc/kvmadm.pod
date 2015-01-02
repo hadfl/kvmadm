@@ -12,7 +12,7 @@ where 'command' is one of the following:
 
     import <filename>
 
-    delete <kvm_name>
+    delete [--purge=vnic,zvol] <kvm_name>
 
     edit <kvm_name>
 
@@ -51,6 +51,7 @@ for the KVM instance the following properties can be set:
      uuid
      shutdown
      cleanup
+     qemu_extra_opts
 
 for each disk the following properties can be set:
 
@@ -75,6 +76,7 @@ for each vnic the following properties can be set:
  optional
     over
     vlan_id
+    mtu
     txtimer
     txburst
 

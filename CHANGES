@@ -1,3 +1,57 @@
+commit 5796db65460fc8a87893c41e705be4748356cf71
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 2 18:28:51 2015 +0100
+
+    - vnic mtu option added
+
+commit ba7e02c63f8a74bb06a0584fbd292670aa187be3
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 2 17:51:05 2015 +0100
+
+    - purge vnic, zvol option
+
+commit 23b2ef802821b8870a433a1cfebf11e81572f18c
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 2 16:26:00 2015 +0100
+
+    - qemu_extra_opts added
+
+commit 4f9c80cfc324ccef1b0bba9fb80679cc9abb8dac
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 23 11:26:26 2014 +0100
+
+    - regex fix
+
+commit ec17d925df9cba9ab00609cd5110410857b3abd9
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 23 10:30:22 2014 +0100
+
+    - anchor regex
+
+commit d02374770ef6b1870ce4d138050c44ab06bc6d19
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 23 10:15:37 2014 +0100
+
+    - cpu type instruction set support
+
+commit 0fad1cc5d4cdff72a37b224d11ac47fd0bd20987
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 16:39:40 2014 +0100
+
+    - add link to man page
+
+commit 6cc6beeb8b9f68b37347a4f96e3f6f8571ad69e8
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 14:33:52 2014 +0100
+
+    - check if FMRI exists before getting state
+
+commit ff34ae00baf15b0259cbb5b8ccd28eb97cf54e86
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 14:03:25 2014 +0100
+
+    getting ready for 0.6.0
+
 commit 04f8a671d1753294d93f5fe5d069c1d2a13b3602
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Dec 15 13:05:51 2014 +0100
