@@ -11,14 +11,15 @@ use File::Temp qw(tempfile);
 use IO::Socket::UNIX qw(SOCK_STREAM);
 use IO::Select;
 use JSON::PP;
+use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
 use Illumos::SMF;
 
-my $FMRI     = 'svc:/system/kvm';
-my $RUN_PATH = '/var/run/kvm';
-my @MON_INFO = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
-my $RCV_TMO  = 3;
-my $opts     = {};
+my $FMRI        = 'svc:/system/kvm';
+my $RUN_PATH    = '/var/run/kvm';
+my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
+my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
+my $RCV_TMO     = 3;
 my $kvmConfig;
 
 #fix perldoc pager if not set
@@ -166,10 +167,20 @@ sub main {
             last;
         };
         /^delete$/ && do {
-            my $kvmName = shift @ARGV;
+            my $kvmName = pop @ARGV;
             defined $kvmName or pod2usage(1);
+            my $opts = {};
+            GetOptions($opts, qw(purge=s)) or exit 1;
+            #split all features into individual options
+            if ($opts->{purge}){
+                for my $purge (split /,/, $opts->{purge}){
+                    $delPurgeMap{$purge} or die "ERROR: purge '$purge' not supported\n";
+                    $opts->{$purge} = 1;
+                }
+                delete $opts->{purge};
+            }
 
-            $kvmConfig->removeKVM($kvmName);
+            $kvmConfig->removeKVM($kvmName, $opts);
             last;
         };
         /^list$/ && do {
@@ -246,7 +257,7 @@ where 'command' is one of the following:
 
     import <filename>
 
-    delete <kvm_name>
+    delete [--purge=vnic,zvol] <kvm_name>
 
     edit <kvm_name>
 

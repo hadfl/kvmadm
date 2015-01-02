@@ -139,6 +139,20 @@ sub getTemplate {
 sub removeKVM {
     my $self = shift;
     my $kvmName = shift;
+    my $opts = shift;
+
+    my $config = $self->readConfig($kvmName);
+
+    for (keys %$opts){
+        /^vnic$/ && do {
+            KVMadm::Utils::purge_vnic($config);
+            next;
+        };
+        /^zvol$/ && do {
+            KVMadm::Utils::purge_zvol($config);
+            next;
+        };
+    }
 
     $smf->deleteFMRI("$FMRI:$kvmName");
 }
