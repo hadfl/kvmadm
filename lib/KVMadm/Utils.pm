@@ -227,6 +227,28 @@ sub nocheck {
     return 1;
 }
 
+sub purge_vnic {
+    my $config = shift;
+
+    for my $nic (@{$config->{nics}}){
+        my @cmd = ($DLADM, qw(delete-vnic), $nic->{nic_name});
+        system(@cmd) && die "ERROR: cannot delete vnic '$nic->{nic_name}'\n";
+    }
+}
+
+sub purge_zvol {
+    my $config = shift;
+
+    for my $zvol (@{$config->{disks}}){
+        #do not remove cdrom images
+        next if $zvol->{media} && $zvol->{media} eq 'cdrom';
+
+        $zvol->{disk_path} =~ s|^/dev/zvol/rdsk/||;
+        my @cmd = ($ZFS, qw(destroy), $zvol->{disk_path});
+        system(@cmd) && die "ERROR: cannot destroy zvol '$zvol->{disk_path}'\n";
+    }
+}
+
 1;
 
 __END__
@@ -320,6 +342,14 @@ checks if a uuid is valid
 =head2 nocheck
 
 returns true
+
+=head2 purge_vnic
+
+deletes all vnic attached to the config
+
+=head2 purge_zvol
+
+deletes all zvols attached to the config
 
 =head1 COPYRIGHT
 
