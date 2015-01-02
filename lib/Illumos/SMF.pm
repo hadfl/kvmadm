@@ -191,8 +191,9 @@ sub getProperty {
     open my $props, '-|', @cmd
         or die "ERROR: cannot get property of FMRI\n";
 
-    my $value = <$props>;
-    chomp $value;
+    chomp (my $value = <$props>);
+    #remove escape before whitespace
+    $value =~ s/\\(\s)/$1/g;
 
     return $value;
 }
@@ -213,6 +214,8 @@ sub getProperties {
     while (my $prop = <$props>){
         chomp $prop;
         my ($name, $type, $value) = split /\s+/, $prop, 3;
+        #remove escape before whitespace
+        $value =~ s/\\(\s)/$1/g;
         $properties->{$name} = $value;
 
     }
