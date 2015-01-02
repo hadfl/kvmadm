@@ -52,19 +52,20 @@ my $kvmProperties = {
     mandatory => {
     },
     optional  => {
-        vnc         => \&KVMadm::Utils::vnc,
-        vnc_pw_file => \&KVMadm::Utils::vnc_pw_file,
-        vcpus       => \&KVMadm::Utils::vcpu,
-        ram         => \&KVMadm::Utils::numeric,
-        time_base   => \&KVMadm::Utils::time_base,
-        boot_order  => \&KVMadm::Utils::alphanumeric,
-        hpet        => \&KVMadm::Utils::boolean,
-        usb_tablet  => \&KVMadm::Utils::boolean,
-        kb_layout   => \&KVMadm::Utils::alphanumeric,
-        uuid        => \&KVMadm::Utils::uuid,
-        cpu_type    => \&KVMadm::Utils::cpu_type,
-        shutdown    => \&KVMadm::Utils::shutdown_type,
-        cleanup     => \&KVMadm::Utils::boolean,
+        vnc             => \&KVMadm::Utils::vnc,
+        vnc_pw_file     => \&KVMadm::Utils::vnc_pw_file,
+        vcpus           => \&KVMadm::Utils::vcpu,
+        ram             => \&KVMadm::Utils::numeric,
+        time_base       => \&KVMadm::Utils::time_base,
+        boot_order      => \&KVMadm::Utils::alphanumeric,
+        hpet            => \&KVMadm::Utils::boolean,
+        usb_tablet      => \&KVMadm::Utils::boolean,
+        kb_layout       => \&KVMadm::Utils::alphanumeric,
+        uuid            => \&KVMadm::Utils::uuid,
+        cpu_type        => \&KVMadm::Utils::cpu_type,
+        shutdown        => \&KVMadm::Utils::shutdown_type,
+        cleanup         => \&KVMadm::Utils::boolean,
+        qemu_extra_opts => \&KVMadm::Utils::nocheck,
     },
     sections  => {
         #section names must end with an 's'
@@ -351,6 +352,8 @@ sub getKVMCmdArray {
 
     push @cmdArray, qw(-usb -usbdevice tablet)
         if $config->{usb_tablet} && $config->{usb_tablet} =~ /^true$/i;
+
+    push @cmdArray, split /\s+/, $config->{qemu_extra_opts} if $config->{qemu_extra_opts};
 
     push @cmdArray, qw(-daemonize);
 

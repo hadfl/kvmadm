@@ -223,6 +223,10 @@ sub uuid {
     return shift =~ /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
 }
 
+sub nocheck {
+    return 1;
+}
+
 1;
 
 __END__
@@ -312,6 +316,10 @@ checks if the argument is a valid schutdown type
 =head2 uuid
 
 checks if a uuid is valid
+
+=head2 nocheck
+
+returns true
 
 =head1 COPYRIGHT
 

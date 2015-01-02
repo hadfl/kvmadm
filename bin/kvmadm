@@ -285,6 +285,7 @@ for the KVM instance the following properties can be set:
      uuid
      shutdown
      cleanup
+     qemu_extra_opts
 
 for each disk the following properties can be set:
 
