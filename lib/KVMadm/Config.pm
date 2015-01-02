@@ -91,6 +91,7 @@ my $kvmProperties = {
             optional  => {
                 over        => \&KVMadm::Utils::alphanumeric,
                 vlan_id     => \&KVMadm::Utils::numeric,
+                mtu         => \&KVMadm::Utils::numeric,
                 txtimer     => \&KVMadm::Utils::numeric,
                 txburst     => \&KVMadm::Utils::numeric,
             },

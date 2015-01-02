@@ -101,6 +101,13 @@ sub nic_name {
             && die "ERROR: vlan id specified to be '" . $nic->{vlan_id}
                 . "' but is '" . $nicProps[2] . "' in fact\n";
 
+        #reset mtu size in case it has been changed
+        exists $nic->{mtu} && do {
+            @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
+            system(@cmd)
+                && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
+        };
+
         return 1;
     };
     close $vnics;
@@ -120,6 +127,12 @@ sub nic_name {
         $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
     print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
     system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
+
+    exists $nic->{mtu} && do {
+        @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
+        system(@cmd)
+            && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
+    };
 
     return 1;
 }
