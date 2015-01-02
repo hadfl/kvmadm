@@ -321,6 +321,7 @@ for each vnic the following properties can be set:
  optional
     over
     vlan_id
+    mtu
     txtimer
     txburst
 
