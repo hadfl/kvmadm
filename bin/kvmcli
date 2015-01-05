@@ -241,11 +241,11 @@ __END__
 
 =head1 NAME
 
-kvmmon - KVM monitoring tool
+kvmcli - KVM monitoring and connection tool
 
 =head1 SYNOPSIS
 
-B<kvmmon> I<command> [I<options...>]
+B<kvmcli> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
@@ -263,7 +263,7 @@ where 'command' is one of the following:
 
 =head1 DESCRIPTION
 
-Use kvmmon for monitoring KVM instances
+Use kvmcli for monitoring KVM instances and connecting to serial consoles
 
 =head2 B<info>
 
@@ -301,15 +301,15 @@ forwards the vnc socket to a TCP port
 
 query the attached block devices of a KVM instance with the name 'test-kvm'
 
-    kvmmon info test-kvm block
+    kvmcli info test-kvm block
 
 connect to the qemu monitor of the KVM instance with the name 'test-kvm'
 
-    kvmmon monitor test-kvm
+    kvmcli monitor test-kvm
 
 forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
 
-    kvmmon vnc 5900 test-kvm
+    kvmcli vnc 5900 test-kvm
 
 =head1 COPYRIGHT
 
