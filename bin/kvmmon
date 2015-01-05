@@ -66,7 +66,7 @@ sub soCat {
         LocalPort => $port,
         ReuseAddr => 1,
         Listen    => 1,
-    ) || die "ERROR: cannot listen on $ip:$port: $!\n";
+    ) or die "ERROR: cannot listen on $ip:$port: $!\n";
     $iosel->add($server);
 
     print "Listening on $ip:$port...\n";
@@ -77,7 +77,7 @@ sub soCat {
                 $socket = IO::Socket::UNIX->new(
                     Type => SOCK_STREAM,
                     Peer => $sock,
-                ) || die "ERROR: cannot open socket $sock: $!\n";
+                ) or die "ERROR: cannot open socket $sock: $!\n";
                 $iosel->add($socket);
 
                 $client = $server->accept;
@@ -107,7 +107,7 @@ sub soCat {
 sub sockConn {
     my $sock = shift;
 
-    local $| =1;
+    local $| = 1;
 
     my $iosel = IO::Select->new;
     $iosel->add(\*STDIN);
@@ -115,7 +115,7 @@ sub sockConn {
     my $socket = IO::Socket::UNIX->new(
         Type => SOCK_STREAM,
         Peer => $sock,
-    ) || die "ERROR: cannot open socket $sock: $!\n";
+    ) or die "ERROR: cannot open socket $sock: $!\n";
     $iosel->add($socket);
 
     while (1){
@@ -179,6 +179,27 @@ sub main {
 
             last;
         };
+        /^console$/ && do {
+            my $kvmName = pop @ARGV;
+            my $conName = shift @ARGV;
+            defined $kvmName && defined $conName or pod2usage(1);
+
+            my $smf = Illumos::SMF->new();
+            $smf->fmriOnline("$FMRI:$kvmName")
+                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            my $conDefined = 0;
+            for my $serial (@{$config->{serials}}){
+                $conDefined = 1 if $serial->{serial_name} eq $conName;
+            }
+                
+            $conDefined or die "ERROR: serial port '$conName' not defined for KVM instance '$kvmName'\n";
+                
+            sockConn("$RUN_PATH/$kvmName.$conName");
+
+            last;
+        };
         /^vnc$/ && do {
             my $kvmName = pop @ARGV;
             my $vncPort = shift @ARGV;
@@ -232,6 +253,8 @@ where 'command' is one of the following:
 
     monitor <kvm_name>
 
+    console <serial_name> <kvm_name>
+
     vnc <[bind_addr:]port> <kvm_name> 
 
     help
@@ -265,6 +288,10 @@ type can be one of the following:
 =head2 B<monitor>
 
 connects to the qemu monitor of the running KVM instance
+
+=head2 B<console>
+
+connects to the console fo the serial port B<serial_name>
 
 =head2 B<vnc>
 

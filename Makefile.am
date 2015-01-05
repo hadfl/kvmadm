@@ -20,12 +20,12 @@ SUFFIXES = .1 .man .pm
 
 SUBDIRS = lib
 
-BIN = bin/@PACKAGE@ bin/system-kvm
+BIN = bin/@PACKAGE@ bin/kvmmon bin/system-kvm
 
 PM :=  $(shell find lib/ -name "*.pm")
 
-MAN = man/kvmadm.1 
-POD = doc/kvmadm.pod
+MAN = man/kvmadm.1 man/kvmmon.1
+POD = doc/kvmadm.pod doc/kvmmon.pod
 
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS $(PM) $(GENERATED_EXTRADIST)
