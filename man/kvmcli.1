@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMCLI 1"
-.TH KVMCLI 1 "2015-01-05" "0.8.0" "kvmadm"
+.TH KVMCLI 1 "2015-01-05" "0.8.1" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -142,8 +142,6 @@ where 'command' is one of the following:
 \&
 \&    monitor <kvm_name>
 \&
-\&    console <serial_name> <kvm_name>
-\&
 \&    vnc <[bind_addr:]port> <kvm_name> 
 \&
 \&    help
@@ -152,7 +150,7 @@ where 'command' is one of the following:
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-Use kvmcli for monitoring \s-1KVM\s0 instances and connecting to serial consoles
+Use kvmcli for monitoring \s-1KVM\s0 instances and forwarding \s-1VNC\s0 sockets
 .SS "\fBinfo\fP"
 .IX Subsection "info"
 queries information about the running \s-1KVM\s0 instance from qemu monitor.
@@ -177,9 +175,6 @@ type can be one of the following:
 .SS "\fBmonitor\fP"
 .IX Subsection "monitor"
 connects to the qemu monitor of the running \s-1KVM\s0 instance
-.SS "\fBconsole\fP"
-.IX Subsection "console"
-connects to the console fo the serial port \fBserial_name\fR
 .SS "\fBvnc\fP"
 .IX Subsection "vnc"
 forwards the vnc socket to a \s-1TCP\s0 port

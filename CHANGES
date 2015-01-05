@@ -1,3 +1,15 @@
+commit 94d1b4c732f48d91538d7093c28b4bec08c57a35
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 20:09:57 2015 +0100
+
+    - console option deprecated
+
+commit a4256c21e1e086e2b2e0e6090b928b838aef9cee
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 16:38:17 2015 +0100
+
+    ready for 0.8.0
+
 commit fa51f4a21ae587446486267a60d71c850f0c40d6
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Jan 5 16:05:28 2015 +0100
