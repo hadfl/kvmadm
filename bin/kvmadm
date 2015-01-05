@@ -8,8 +8,6 @@ use warnings;
 
 use Pod::Usage;
 use File::Temp qw(tempfile);
-use IO::Socket::UNIX qw(SOCK_STREAM);
-use IO::Select;
 use JSON::PP;
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
@@ -17,9 +15,7 @@ use Illumos::SMF;
 
 my $FMRI        = 'svc:/system/kvm';
 my $RUN_PATH    = '/var/run/kvm';
-my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
-my $RCV_TMO     = 3;
 my $kvmConfig;
 
 #fix perldoc pager if not set
@@ -35,33 +31,6 @@ sub gen_uuid_v4 {
     #set version to 4
     substr $uuid, 6, 1, chr(ord(substr $uuid, 6, 1) & 0x0f | 0x04 << 4);
     return join '-', map { unpack 'H*', $_ } map { substr $uuid, 0, $_, '' } qw(4 2 2 2 6);
-}
-
-sub queryMonitor {
-    my $name = shift;
-    my $query = shift;
-
-    my $sock = IO::Socket::UNIX->new(
-        Type => SOCK_STREAM,
-        Peer => $RUN_PATH . '/' . $name . '.monitor',
-    ) or die "Cannot open socket $!\n";
-
-    $sock->send($query);
-
-    my $wait = IO::Select->new;
-    $wait->add($sock);
-    
-    my $recv;
-    while ($wait->can_read($RCV_TMO)){
-        my $buffer;
-
-        defined $sock->recv($buffer, 1024) or die "ERROR: cannot read from monitor: $!\n";
-        $recv .= $buffer;
-
-        last if $recv =~ s/\(qemu\)/\(qemu\)/g == 2;
-    }
-    $sock->close();
-    return [grep { $_ !~ /^(?:QEMU|\(qemu\))/ } split "\n", $recv];
 }
 
 sub editConfig {
@@ -200,27 +169,6 @@ sub main {
 
             last;
         };
-        /^info$/ && do {
-            my $kvmName = shift @ARGV;
-            my $types = shift @ARGV;
-            defined $kvmName or pod2usage(1);
-
-            my $smf = Illumos::SMF->new();
-            $smf->fmriOnline("$FMRI:$kvmName")
-                or die "ERROR: KVM instance '$kvmName' not online\n";
-
-            my @types = !$types || $types eq 'all' ? @MON_INFO : split ',', $types;
-            for my $type (@types){
-                grep { $_ eq $type } @MON_INFO
-                    or die "ERROR: don't know type '$type'\n";
-                
-                print "QEMU INFO $type:\n";
-                print join("\n", @{queryMonitor($kvmName, "info $type\n")});
-                print "\n\n";
-            }
-
-            last;
-        };
         /^man$/ && do {
             pod2usage(-exitstatus => 0, -verbose => 2);
 
@@ -264,8 +212,6 @@ where 'command' is one of the following:
     list [kvm_name]
 
     show-cmd <kvm_name>
-
-    info <kvm_name> [type,...]
 
     help
 
@@ -353,26 +299,6 @@ is given.
 =head2 B<show-cmd>
 
 prints the KVM invocation command for debug purpose
-
-=head2 B<info>
-
-queries nformation about the running KVM instance from qemu monitor.
-
-type can be one of the following:
-
-     all
-     block
-     blockstats
-     chardev
-     cpus
-     kvm
-     network
-     pci
-     registers
-     qtree
-     usb
-     version
-     vnc
 
 =head1 EXAMPLES
 

@@ -1,0 +1,347 @@
+#!/usr/bin/env perl
+
+use FindBin;
+# PERL5LIB
+use lib "$FindBin::Bin/../lib";
+use strict;
+use warnings;
+
+use Pod::Usage;
+use IO::Socket::INET;
+use IO::Socket::UNIX qw(SOCK_STREAM);
+use IO::Select;
+use KVMadm::Config;
+use Illumos::SMF;
+
+my $FMRI        = 'svc:/system/kvm';
+my $RUN_PATH    = '/var/run/kvm';
+my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
+my $RCV_TMO     = 3;
+my $kvmConfig;
+
+#fix perldoc pager if not set
+$ENV{PERLDOC_PAGER} ||= '/usr/bin/less -rins' if -x '/usr/bin/less';
+
+sub queryMonitor {
+    my $name = shift;
+    my $query = shift;
+
+    my $sock = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM,
+        Peer => $RUN_PATH . '/' . $name . '.monitor',
+    ) or die "Cannot open socket $!\n";
+
+    $sock->send($query);
+
+    my $wait = IO::Select->new;
+    $wait->add($sock);
+    
+    my $recv;
+    while ($wait->can_read($RCV_TMO)){
+        my $buffer;
+
+        defined $sock->recv($buffer, 1024) or die "ERROR: cannot read from monitor: $!\n";
+        $recv .= $buffer;
+
+        last if $recv =~ s/\(qemu\)/\(qemu\)/g == 2;
+    }
+    $sock->close();
+    return [grep { $_ !~ /^(?:QEMU|\(qemu\))/ } split "\n", $recv];
+}
+
+sub soCat {
+    my $sock = shift;
+    my $host = shift;
+
+    my ($ip, $port) = $host =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
+    $ip //= '0.0.0.0';
+    $port or die "ERROR: port $port not valid\n";
+
+    my $iosel = IO::Select->new;
+    my %connection = ();
+    my $socket;
+    my $client;
+    my $server = IO::Socket::INET->new(
+        LocalAddr => $ip,
+        LocalPort => $port,
+        ReuseAddr => 1,
+        Listen    => 1,
+    ) or die "ERROR: cannot listen on $ip:$port: $!\n";
+    $iosel->add($server);
+
+    print "Listening on $ip:$port...\n";
+
+    while (1){
+        for my $ready ($iosel->can_read){
+            if ($ready == $server){
+                $socket = IO::Socket::UNIX->new(
+                    Type => SOCK_STREAM,
+                    Peer => $sock,
+                ) or die "ERROR: cannot open socket $sock: $!\n";
+                $iosel->add($socket);
+
+                $client = $server->accept;
+                $iosel->add($client);
+                $connection{$client} = $socket;
+                $connection{$socket} = $client;
+            }
+            else{
+                next if !exists $connection{$ready};
+                my $buffer;
+                if ($ready->sysread($buffer, 4096)){
+                    $connection{$ready}->syswrite($buffer);
+                }
+                else{
+                    $iosel->remove($client);
+                    $iosel->remove($socket);
+                    %connection = ();
+
+                    $client->close;
+                    $socket->close;
+                }
+            }
+        }
+    }
+}
+
+sub sockConn {
+    my $sock = shift;
+
+    local $| = 1;
+
+    my $iosel = IO::Select->new;
+    $iosel->add(\*STDIN);
+
+    my $socket = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM,
+        Peer => $sock,
+    ) or die "ERROR: cannot open socket $sock: $!\n";
+    $iosel->add($socket);
+
+    while (1){
+        for my $ready ($iosel->can_read){
+            if ($ready == $socket){
+                my $buffer;
+                if ($socket->sysread($buffer, 1024)){
+                    print $buffer;
+                }
+            }
+            elsif ($ready == \*STDIN){
+                my $buffer;
+                $ready->sysread($buffer, 1024);
+                $socket->syswrite($buffer);
+            }
+            else{
+                $socket->close;
+                exit;
+            }
+        }
+    }
+}
+
+sub main {
+    my $mainOpt = shift;
+    defined $mainOpt or pod2usage(1);
+
+    $kvmConfig = KVMadm::Config->new();
+
+    for ($mainOpt){
+        /^info$/ && do {
+            my $kvmName = shift @ARGV;
+            my $types = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $smf = Illumos::SMF->new();
+            $smf->fmriOnline("$FMRI:$kvmName")
+                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            my @types = !$types || $types eq 'all' ? @MON_INFO : split /,/, $types;
+            for my $type (@types){
+                grep { $_ eq $type } @MON_INFO
+                    or die "ERROR: don't know type '$type'\n";
+                
+                print "QEMU INFO $type:\n";
+                print join("\n", @{queryMonitor($kvmName, "info $type\n")});
+                print "\n\n";
+            }
+
+            last;
+        };
+        /^monitor$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $smf = Illumos::SMF->new();
+            $smf->fmriOnline("$FMRI:$kvmName")
+                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            sockConn("$RUN_PATH/$kvmName.monitor");
+
+            last;
+        };
+        /^console$/ && do {
+            my $kvmName = pop @ARGV;
+            my $conName = shift @ARGV;
+            defined $kvmName && defined $conName or pod2usage(1);
+
+            my $smf = Illumos::SMF->new();
+            $smf->fmriOnline("$FMRI:$kvmName")
+                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            my $conDefined = 0;
+            for my $serial (@{$config->{serials}}){
+                $conDefined = 1 if $serial->{serial_name} eq $conName;
+            }
+                
+            $conDefined or die "ERROR: serial port '$conName' not defined for KVM instance '$kvmName'\n";
+                
+            sockConn("$RUN_PATH/$kvmName.$conName");
+
+            last;
+        };
+        /^vnc$/ && do {
+            my $kvmName = pop @ARGV;
+            my $vncPort = shift @ARGV;
+            defined $kvmName && defined $vncPort or pod2usage(1);
+
+            my $smf = Illumos::SMF->new();
+            $smf->fmriOnline("$FMRI:$kvmName")
+                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            !$config->{vnc} || $config->{vnc} !~ /^sock(?:et)?$/i
+                and die "ERROR: VNC not defined as socket for KVM instance '$kvmName'\n";
+
+            soCat("$RUN_PATH/$kvmName.vnc", $vncPort);
+
+            last;
+        };
+        /^man$/ && do {
+            pod2usage(-exitstatus => 0, -verbose => 2);
+
+            last;
+        };
+        /^help$/ && do {
+            pod2usage(-exitval => 'NOEXIT');
+
+            last;
+        };
+        #main argument invalid
+        pod2usage(1);
+    }
+    return 1;
+}
+
+main(shift);
+
+1;
+
+__END__
+
+=head1 NAME
+
+kvmcli - KVM monitoring and connection tool
+
+=head1 SYNOPSIS
+
+B<kvmcli> I<command> [I<options...>]
+
+where 'command' is one of the following:
+
+    info <kvm_name> [type,...]
+
+    monitor <kvm_name>
+
+    console <serial_name> <kvm_name>
+
+    vnc <[bind_addr:]port> <kvm_name> 
+
+    help
+
+    man
+
+=head1 DESCRIPTION
+
+Use kvmcli for monitoring KVM instances and connecting to serial consoles
+
+=head2 B<info>
+
+queries information about the running KVM instance from qemu monitor.
+
+type can be one of the following:
+
+     all
+     block
+     blockstats
+     chardev
+     cpus
+     kvm
+     network
+     pci
+     registers
+     qtree
+     usb
+     version
+     vnc
+
+=head2 B<monitor>
+
+connects to the qemu monitor of the running KVM instance
+
+=head2 B<console>
+
+connects to the console fo the serial port B<serial_name>
+
+=head2 B<vnc>
+
+forwards the vnc socket to a TCP port
+
+=head1 EXAMPLES
+
+query the attached block devices of a KVM instance with the name 'test-kvm'
+
+    kvmcli info test-kvm block
+
+connect to the qemu monitor of the KVM instance with the name 'test-kvm'
+
+    kvmcli monitor test-kvm
+
+forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
+
+    kvmcli vnc 5900 test-kvm
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
+
+=head1 ACKNOWLEDGMENT
+
+While the clever configuration options and other cool ideas have been shamelessly
+stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm.
+
+=head1 HISTORY
+
+2015-01-05 had Initial Version
+
+=cut
