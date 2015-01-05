@@ -123,32 +123,28 @@
 .rm #[ #] #H #V #F C
 .\" ========================================================================
 .\"
-.IX Title "KVMADM 1"
-.TH KVMADM 1 "2015-01-05" "0.8.0" "kvmadm"
+.IX Title "KVMCLI 1"
+.TH KVMCLI 1 "2015-01-05" "0.8.0" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
-kvmadm \- Manage KVMs under SMF control
+kvmcli \- KVM monitoring and connection tool
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBkvmadm\fR \fIcommand\fR [\fIoptions...\fR]
+\&\fBkvmcli\fR \fIcommand\fR [\fIoptions...\fR]
 .PP
 where 'command' is one of the following:
 .PP
 .Vb 1
-\&    create <kvm_name>
+\&    info <kvm_name> [type,...]
 \&
-\&    import <filename>
+\&    monitor <kvm_name>
 \&
-\&    delete [\-\-purge=vnic,zvol] <kvm_name>
+\&    console <serial_name> <kvm_name>
 \&
-\&    edit <kvm_name>
-\&
-\&    list [kvm_name]
-\&
-\&    show\-cmd <kvm_name>
+\&    vnc <[bind_addr:]port> <kvm_name> 
 \&
 \&    help
 \&
@@ -156,114 +152,55 @@ where 'command' is one of the following:
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-Use kvmadm to create/edit your KVMs under \s-1SMF\s0 control
-.SS "\fBcreate\fP"
-.IX Subsection "create"
-creates a \s-1KVM\s0 instance with the name \fBkvm_name\fR. Create will open an editor
-where the properties can be set. zvols and/or vnics which do not
-exist will be created.
+Use kvmcli for monitoring \s-1KVM\s0 instances and connecting to serial consoles
+.SS "\fBinfo\fP"
+.IX Subsection "info"
+queries information about the running \s-1KVM\s0 instance from qemu monitor.
 .PP
-for the \s-1KVM\s0 instance the following properties can be set:
+type can be one of the following:
 .PP
 .Vb 10
-\& optional
+\&     all
+\&     block
+\&     blockstats
+\&     chardev
+\&     cpus
+\&     kvm
+\&     network
+\&     pci
+\&     registers
+\&     qtree
+\&     usb
+\&     version
 \&     vnc
-\&     vnc_pw_file
-\&     vcpus
-\&     ram
-\&     time_base
-\&     boot_order
-\&     hpet
-\&     usb_tablet
-\&     kb_layout
-\&     uuid
-\&     shutdown
-\&     cleanup
-\&     qemu_extra_opts
 .Ve
-.PP
-for each disk the following properties can be set:
-.PP
-.Vb 4
-\& mandatory
-\&     model
-\&     disk_path
-\&     index 
-\&
-\& optional
-\&     boot
-\&     media
-\&     disk_size
-\&     cache
-.Ve
-.PP
-for each vnic the following properties can be set:
-.PP
-.Vb 4
-\& mandatory
-\&    model
-\&    nic_name
-\&    index
-\&
-\& optional
-\&    over
-\&    vlan_id
-\&    mtu
-\&    txtimer
-\&    txburst
-.Ve
-.PP
-for each serial the following properties can be set:
-.PP
-.Vb 3
-\& mandatory
-\&    serial_name
-\&    index
-.Ve
-.SS "\fBimport\fP"
-.IX Subsection "import"
-imports a \s-1KVM\s0 configuration from a file.
-.SS "\fBdelete\fP"
-.IX Subsection "delete"
-deletes the \s-1KVM\s0 instance with the name \fBkvm_name\fR. Note: zvols and vnics will
-\&\fBnot\fR be deleted.
-.SS "\fBedit\fP"
-.IX Subsection "edit"
-modify the configuration of a \s-1KVM\s0 instance. See the descriptions in the \fBcreate\fR
-function for details.
-.SS "\fBlist\fP"
-.IX Subsection "list"
-lists the available \s-1KVM\s0 instances with their properties. Lists details for \fBkvm_name\fR
-is given.
-.SS "\fBshow-cmd\fP"
-.IX Subsection "show-cmd"
-prints the \s-1KVM\s0 invocation command for debug purpose
+.SS "\fBmonitor\fP"
+.IX Subsection "monitor"
+connects to the qemu monitor of the running \s-1KVM\s0 instance
+.SS "\fBconsole\fP"
+.IX Subsection "console"
+connects to the console fo the serial port \fBserial_name\fR
+.SS "\fBvnc\fP"
+.IX Subsection "vnc"
+forwards the vnc socket to a \s-1TCP\s0 port
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-create a \s-1KVM\s0 instance with the name 'test\-kvm'
+query the attached block devices of a \s-1KVM\s0 instance with the name 'test\-kvm'
 .PP
 .Vb 1
-\&    kvmadm create test\-kvm
+\&    kvmcli info test\-kvm block
 .Ve
 .PP
-check the \s-1KVM\s0 instance properties
+connect to the qemu monitor of the \s-1KVM\s0 instance with the name 'test\-kvm'
 .PP
 .Vb 1
-\&    kvmadm list test\-kvm
+\&    kvmcli monitor test\-kvm
 .Ve
 .PP
-list the available \s-1KVM\s0 instances
+forward the vnc socket of the \s-1KVM\s0 instance with the name 'test\-kvm' to the \s-1TCP\s0 port 5900
 .PP
 .Vb 1
-\&    svcs system/kvm
-.Ve
-.PP
-copy a \s-1KVM\s0 instance
-.PP
-.Vb 1
-\&    kvmadm list test\-kvm > test\-kvm.json
-\&
-\&    kvmadm import test\-kvm.json
+\&    kvmcli vnc 5900 test\-kvm
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
@@ -292,4 +229,4 @@ While the clever configuration options and other cool ideas have been shamelessl
 stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm.
 .SH "HISTORY"
 .IX Header "HISTORY"
-2014\-10\-03 had Initial Version
+2015\-01\-05 had Initial Version

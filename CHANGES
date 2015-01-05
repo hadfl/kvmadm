@@ -1,3 +1,27 @@
+commit fa51f4a21ae587446486267a60d71c850f0c40d6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 16:05:28 2015 +0100
+
+    - kvmcli it shall be
+
+commit 435a488c2fc4b6048bb2b49498205bde21cc66a3
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 15:04:24 2015 +0100
+
+    - build kvmmon
+
+commit 7c85133f0de4551aebd68e4adeefece2570b2428
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 14:46:01 2015 +0100
+
+    - kvmmon initial release
+
+commit 26e3886a4c29812a4eea22495554c40c1529888d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 2 18:44:13 2015 +0100
+
+    ready for 0.7.0
+
 commit 5796db65460fc8a87893c41e705be4748356cf71
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Jan 2 18:28:51 2015 +0100

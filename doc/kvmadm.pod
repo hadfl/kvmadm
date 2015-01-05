@@ -20,8 +20,6 @@ where 'command' is one of the following:
 
     show-cmd <kvm_name>
 
-    info <kvm_name> [type,...]
-
     help
 
     man
@@ -108,26 +106,6 @@ is given.
 =head2 B<show-cmd>
 
 prints the KVM invocation command for debug purpose
-
-=head2 B<info>
-
-queries nformation about the running KVM instance from qemu monitor.
-
-type can be one of the following:
-
-     all
-     block
-     blockstats
-     chardev
-     cpus
-     kvm
-     network
-     pci
-     registers
-     qtree
-     usb
-     version
-     vnc
 
 =head1 EXAMPLES
 
