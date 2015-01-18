@@ -27,12 +27,12 @@ fi
 AC_SUBST(actual_exec_prefix)
 
 actual_datarootdir=$datarootdir
-if test x$actual_datarootdir=x'${prefix}/share'; then
+if test x$actual_datarootdir = x'${prefix}/share'; then
     actual_datarootdir=$actual_prefix/share
 fi
 
 actual_mandir=$mandir
-if test x$actual_mandir=x'${datarootdir}/man'; then
+if test x$actual_mandir = x'${datarootdir}/man'; then
     actual_mandir=$actual_datarootdir/man
 fi
 AC_SUBST(actual_mandir)
