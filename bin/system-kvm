@@ -75,7 +75,7 @@ $ENV{SMF_FMRI} || do {
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
 };
 
-my ($kvmName) = $ENV{SMF_FMRI} =~ /^$FMRI:(\w+)$/;
+my ($kvmName) = $ENV{SMF_FMRI} =~ /^$FMRI:([-\w]+)$/;
 
 for (shift){
     /^start$/ && do {
