@@ -1,3 +1,27 @@
+commit 631bd08b8ed12103b17bc30198b0be7cc9d8b0bf
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Mar 31 16:31:36 2015 +0200
+
+    - fix boot parameter
+
+commit 3bb0d15cb3abe967876970af99ae1bd9bb5d611a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Mar 31 16:22:03 2015 +0200
+
+    - allow dashes for kvm instance name
+
+commit 87a9d601b924e65ebaaea43db1439c80516088f9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jan 18 14:32:23 2015 +0100
+
+    forward port fix from znapzend configure
+
+commit 3a78d1f53b3343b8bad06d24c46f38e581488aab
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jan 5 20:29:25 2015 +0100
+
+    ready for 0.8.1
+
 commit 94d1b4c732f48d91538d7093c28b4bec08c57a35
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon Jan 5 20:09:57 2015 +0100
