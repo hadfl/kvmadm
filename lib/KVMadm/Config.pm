@@ -334,7 +334,7 @@ sub getKVMCmdArray {
             . ',media=' . ($disk->{media} // 'disk')
             . ',index=' . $disk->{index}
             . ',cache=' . ($disk->{cache} // 'none')
-            . ($disk->{boot} eq 'true' ? ',boot=on' : ''));
+            . ($disk->{boot} && $disk->{boot} eq 'true' ? ',boot=on' : ''));
     }
     push @cmdArray, ('-boot', 'order=' . ($config->{boot_order} ? $config->{boot_order} : 'cd'));
 
