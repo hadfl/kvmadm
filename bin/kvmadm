@@ -13,8 +13,8 @@ use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
 use Illumos::SMF;
 
-my $FMRI        = 'svc:/system/kvm';
-my $RUN_PATH    = '/var/run/kvm';
+my $FMRI        = KVMadm::Config->fmri();
+my $RUN_PATH    = KVMadm::Config->runPath();
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
 my $kvmConfig;
 

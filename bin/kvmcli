@@ -13,8 +13,8 @@ use IO::Select;
 use KVMadm::Config;
 use Illumos::SMF;
 
-my $FMRI        = 'svc:/system/kvm';
-my $RUN_PATH    = '/var/run/kvm';
+my $FMRI        = KVMadm::Config->fmri();
+my $RUN_PATH    = KVMadm::Config->runPath();
 my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
 my $RCV_TMO     = 3;
 my $kvmConfig;

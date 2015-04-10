@@ -25,222 +25,271 @@ my %shutdownOptions = (
     acpi_kill   => undef,
 );
 
-# public methods
-sub boolean {
-    return shift =~ /^(?:true|false)$/i;
+# constructor
+sub new {
+    my $class = shift;
+    my $self = { @_ };
+
+    return bless $self, $class
 }
 
-sub numeric {
+# private methods
+my $numeric = sub {
     return shift =~ /^\d+$/;
-}
+};
 
-sub alphanumeric {
+my $alphanumeric = sub {
     return shift =~ /^[-\w]+$/;
-}
+};
 
-sub disk_model {
-    return grep { $_[0] eq $_ } qw(ide virtio scsi);
-}
+# public methods
+sub file {
+    my $self = shift;
+    my $op = shift;
+    my $msg = shift;
 
-sub disk_path {
-    my $path = shift;
-    my $disk = shift;
-
-    if (exists $disk->{media} && $disk->{media} eq 'cdrom'){
-        -f $path || die "ERROR: cdrom image '$path' does not exist\n";
+    return sub {
+        my $file = shift;
+        return open (my $fh, $op, $file) ? undef : "$msg $file: $!";
     }
-    else{
-        $path =~ s|^/dev/zvol/rdsk/||;
+}
 
-        -e "/dev/zvol/rdsk/$path" || do {
-            my @cmd = ($ZFS, qw(create -p -V), ($disk->{disk_size} // '10G'),
-                $path);
+sub zonePath {
+    my $self = shift;
 
-            print STDERR "-> zvol $path does not exist. creating it...\n";
-            system(@cmd) && die "ERROR: cannot create zvol '$path'\n";
+    return sub {
+        my $path = shift;
+        return $path =~ /^\/[-\w\/]+$/ ? undef : "zonepath '$path' is not valid";
+    }
+}
+
+sub regexp {
+    my $self = shift;
+    my $rx = shift;
+    my $msg = shift;
+
+    return sub {
+        my $value = shift;
+        return $value =~ /$rx/ ? undef : "$msg ($value)";
+    }
+}
+
+sub elemOf {
+    my $self = shift;
+    my $elems = [ @_ ];
+
+    return sub {
+        my $value = shift;
+        return (grep { $_ eq $value } @$elems) ? undef
+            : 'expected a value from the list: ' . join(', ', @$elems);
+    }
+}
+
+sub diskPath {
+    my $self = shift;
+
+    return sub {
+        my ($path, $disk) = @_;
+
+        if (exists $disk->{media} && $disk->{media} eq 'cdrom'){
+            -f $path || die "ERROR: cdrom image '$path' does not exist\n";
+        }
+        else{
+            $path =~ s|^/dev/zvol/rdsk/||;
+
+            -e "/dev/zvol/rdsk/$path" || do {
+                my @cmd = ($ZFS, qw(create -p -V), ($disk->{disk_size} // '10G'),
+                    $path);
+
+                print STDERR "-> zvol $path does not exist. creating it...\n";
+                system(@cmd) && die "ERROR: cannot create zvol '$path'\n";
+            };
+        }
+        return undef;
+    }
+}
+
+sub nicName {
+    my $self = shift;
+
+    return sub {
+        my ($nicName, $nic) = @_;
+
+        #use string for 'link,over,vid' as perl will warn otherwise
+        my @cmd = ($DLADM, qw(show-vnic -p -o), 'link,over,vid');
+
+        open my $vnics, '-|', @cmd or die "ERROR: cannot get vnics\n";
+
+        while (<$vnics>){
+            chomp;
+            my @nicProps = split ':', $_, 3;
+            next if $nicProps[0] ne $nicName;
+
+            $nic->{over} && $nic->{over} ne $nicProps[1]
+                && die "ERROR: vnic specified to be over '" . $nic->{over}
+                    . "' but is over '" . $nicProps[1] . "' in fact\n";
+
+            $nic->{vlan_id} && $nic->{vlan_id} ne $nicProps[2]
+                && die "ERROR: vlan id specified to be '" . $nic->{vlan_id}
+                    . "' but is '" . $nicProps[2] . "' in fact\n";
+
+            #reset mtu size in case it has been changed
+            exists $nic->{mtu} && do {
+                @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
+                system(@cmd)
+                    && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
+            };
+
+            return undef;
         };
-    }
-    return 1;
-}
+        close $vnics;
 
-sub disk_media {
-    return grep { $_[0] eq $_ } qw(disk cdrom);
-}
+        #only reach here if vnic does not exist
+        #get first physical link if over is not given
+        exists $nic->{over} || do {
+            @cmd = ($DLADM, qw(show-phys -p -o link));
 
-sub disk_size {
-    return shift =~ /^\d+[bkmgtp]$/i;
-}
+            open my $nics, '-|', @cmd or die "ERROR: cannot get nics\n";
 
-sub disk_cache {
-    return grep { $_[0] eq $_ } qw(none writeback writethrough);
-}
+            chomp($nic->{over} = <$nics>);
+            close $nics;
+        };
 
-sub nic_model {
-    return grep { $_[0] eq $_ } qw(virtio e1000 rtl8139);
-}
+        @cmd = ($DLADM, qw(create-vnic -l), $nic->{over},
+            $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
+        print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
+        system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
 
-sub nic_name {
-    my $nicName = shift;
-    my $nic = shift;
-
-    #use string for 'link,over,vid' as perl will warn otherwise
-    my @cmd = ($DLADM, qw(show-vnic -p -o), 'link,over,vid');
-
-    open my $vnics, '-|', @cmd or die "ERROR: cannot get vnics\n";
-
-    while (<$vnics>){
-        chomp;
-        my @nicProps = split ':', $_, 3;
-        next if $nicProps[0] ne $nicName;
-
-        $nic->{over} && $nic->{over} ne $nicProps[1]
-            && die "ERROR: vnic specified to be over '" . $nic->{over}
-                . "' but is over '" . $nicProps[1] . "' in fact\n";
-
-        $nic->{vlan_id} && $nic->{vlan_id} ne $nicProps[2]
-            && die "ERROR: vlan id specified to be '" . $nic->{vlan_id}
-                . "' but is '" . $nicProps[2] . "' in fact\n";
-
-        #reset mtu size in case it has been changed
         exists $nic->{mtu} && do {
             @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
             system(@cmd)
                 && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
         };
 
-        return 1;
-    };
-    close $vnics;
-
-    #only reach here if vnic does not exist
-    #get first physical link if over is not given
-    exists $nic->{over} || do {
-        @cmd = ($DLADM, qw(show-phys -p -o link));
-
-        open my $nics, '-|', @cmd or die "ERROR: cannot get nics\n";
-
-        chomp($nic->{over} = <$nics>);
-        close $nics;
-    };
-
-    @cmd = ($DLADM, qw(create-vnic -l), $nic->{over},
-        $nic->{vlan_id} ? ('-v', $nic->{vlan_id}, $nicName) : $nicName);
-    print STDERR "-> vnic '$nicName' does not exist. creating it...\n";
-    system(@cmd) && die "ERROR: cannot create vnic '$nicName'\n";
-
-    exists $nic->{mtu} && do {
-        @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
-        system(@cmd)
-            && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
-    };
-
-    return 1;
-}
-
-sub time_base {
-    return grep { $_[0] eq $_ } qw(utc localtime);
+        return undef;
+    }
 }
 
 sub vcpu {
-    my $vcpu = shift;
+    my $self = shift;
 
-    return 1 if numeric($vcpu);
+    return sub {
+        my $vcpu = shift;
 
-    my @vcpu = split ',', $vcpu;
+        return undef if $numeric->($vcpu);
 
-    shift @vcpu if numeric($vcpu[0]);
+        my @vcpu = split ',', $vcpu;
+
+        shift @vcpu if $numeric->($vcpu[0]);
     
-    for my $vcpuConf (@vcpu){
-        my @vcpuConf = split '=', $vcpuConf, 2;
-        exists $vcpuOptions{$vcpuConf[0]} && numeric($vcpuConf[1])
-            or return 0;
-    }
+        for my $vcpuConf (@vcpu){
+            my @vcpuConf = split '=', $vcpuConf, 2;
+            exists $vcpuOptions{$vcpuConf[0]} && $numeric->($vcpuConf[1])
+                or return "ERROR: vcpu setting not valid";
+        }
 
-    return 1;
+        return undef;
+    }
 }
 
-sub cpu_type {
-    my $cpu_type = shift;
-    my @cmd = ($QEMU_KVM, qw(-cpu ?));
+sub cpuType {
+    my $self = shift;
 
-    open my $types, '-|', @cmd or die "ERROR: cannot get cpu types\n";
-    my @types = <$types>;
-    chomp(@types);
-    close $types;
+    return sub {
+        my $cpu_type = shift;
+        my @cmd = ($QEMU_KVM, qw(-cpu ?));
 
-    @cmd = ($ISAINFO, qw(-x));
+        open my $types, '-|', @cmd or die "ERROR: cannot get cpu types\n";
+        my @types = <$types>;
+        chomp(@types);
+        close $types;
 
-    open my $inst, '-|', @cmd or die "ERROR: cannot get cpu instruction sets\n";
-    chomp(my $instSet = <$inst>);
-    close $inst;
-    $instSet =~ s/^amd64:\s+//;
-    my @inst = map { "+$_" } split /\s+/, $instSet;
+        @cmd = ($ISAINFO, qw(-x));
 
-    my @cpu_type = split ',', $cpu_type;
+        open my $inst, '-|', @cmd or die "ERROR: cannot get cpu instruction sets\n";
+        chomp(my $instSet = <$inst>);
+        close $inst;
+        $instSet =~ s/^amd64:\s+//;
+        my @inst = map { "+$_" } split /\s+/, $instSet;
 
-    return 0 if !grep { /\[?$cpu_type[0]\]?$/ } @types;
-    shift @cpu_type;
+        my @cpu_type = split ',', $cpu_type;
 
-    for my $feature (@cpu_type){
-        return 0 if !grep { $_ eq $feature } @inst;
+        return "ERROR: vcpu type not valid" if !grep { /\[?$cpu_type[0]\]?$/ } @types;
+        shift @cpu_type;
+
+        for my $feature (@cpu_type){
+            return "ERROR: vcpu type feature not valid" if !grep { $_ eq $feature } @inst;
+        }
+
+        return undef;
     }
-
-    return 1;
 }
 
 sub vnc {
-    my $vnc = shift;
+    my $self = shift;
 
-    return 1 if $vnc =~ /^sock(?:et)?$/i;
+    return sub {
+        my $vnc = shift;
 
-    my ($ip, $port) = $vnc =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
-    $ip //= '127.0.0.1';
-    return 0 if !defined $port;
+        return undef if $vnc =~ /^sock(?:et)?$/i;
 
-    my @ips = qw(0.0.0.0);
-    open my $inetAddr, '-|', $IFCONFIG or die "ERROR: cannot get IP addresses\n";
-    while (<$inetAddr>){
-        chomp;
-        next if !/inet\s+(\d{1,3}(?:\.\d{1,3}){3})/;
-        push @ips, $1;
-    };
-    close $inetAddr;
+        my ($ip, $port) = $vnc =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
+        $ip //= '127.0.0.1';
+        return "ERROR: vnc port not valid" if !defined $port;
 
-    return numeric($port) && grep { $ip eq $_ } @ips;
+        my @ips = qw(0.0.0.0);
+        open my $inetAddr, '-|', $IFCONFIG or die "ERROR: cannot get IP addresses\n";
+        while (<$inetAddr>){
+            chomp;
+            next if !/inet\s+(\d{1,3}(?:\.\d{1,3}){3})/;
+            push @ips, $1;
+        };
+        close $inetAddr;
+
+        return $numeric->($port) && (grep { $ip eq $_ } @ips)
+            ? undef : "ERROR: vnc setting not valid. check bind_addr and port values"; 
+    }
 }
 
-sub vnc_pw_file {
-    my $pwFile = shift;
+sub vncPwFile {
+    my $self = shift;
 
-    -f $pwFile || die "ERROR: vnc password file '$pwFile' does not exist\n";
+    return sub {
+        my $pwFile = shift;
 
-    open my $fh, '<', $pwFile or die "ERROR: cannot open vnc password file $pwFile: $!\n";
-    chomp(my $password = do { local $/; <$fh>; });
-    close $fh;
+        -f $pwFile or die "ERROR: vnc password file '$pwFile' does not exist\n";
 
-    return length($password) <= 8;
+        open my $fh, '<', $pwFile or die "ERROR: cannot open vnc password file $pwFile: $!\n";
+        chomp(my $password = do { local $/; <$fh>; });
+        close $fh;
+
+        return length($password) <= 8 ? undef
+            : "ERROR: password must be less or equal than 8 characters";
+    }
 }
 
-sub serial_name {
-    my $name = shift;
+sub serialName {
+    my $self = shift;
 
-    return 1 if alphanumeric($name) && $name !~ /^(?:pid|vnc|monitor)$/;
-}
+    return sub {
+        my $name = shift;
 
-sub shutdown_type {
-    my $shutdownType = shift;
-    return exists $shutdownOptions{$shutdownType}
+        return $alphanumeric->($name) && $name !~ /^(?:pid|vnc|monitor)$/
+            ? undef : "ERROR: serial device name not valid";
+    }
 }
 
 sub uuid {
-    return shift =~ /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+    my $self = shift;
+
+    return sub {
+        return shift =~ /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i
+            ? undef : "ERROR: uuid is not a valid version 4 uuid";
+    }
 }
 
-sub nocheck {
-    return 1;
-}
-
-sub purge_vnic {
+sub purgeVnic {
+    my $self = shift;
     my $config = shift;
 
     for my $nic (@{$config->{nics}}){
@@ -249,7 +298,8 @@ sub purge_vnic {
     }
 }
 
-sub purge_zvol {
+sub purgeZvol {
+    my $self = shift;
     my $config = shift;
 
     for my $zvol (@{$config->{disks}}){

@@ -5,9 +5,7 @@ use warnings;
 
 # commands
 my $SVCS    = '/usr/bin/svcs';
-my $SVCADM  = '/usr/sbin/svcadm';
 my $SVCCFG  = '/usr/sbin/svccfg';
-my $SVCPROP = '/usr/bin/svcprop'; 
 
 # constructor
 sub new {
@@ -20,8 +18,12 @@ sub new {
 sub refreshFMRI {
     my $self = shift;
     my $fmri = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
 
-    my @cmd = ($SVCADM, 'refresh', $fmri);
+    my @cmd = ($SVCCFG, '-s', $fmri, 'refresh');
 
     system(@cmd) and die "ERROR: cannot refresh FMRI '$fmri'\n";
     
@@ -30,66 +32,93 @@ sub refreshFMRI {
 
 sub listFMRI {
     my $self = shift;
-    my $fmri = $_[0] || '*';
+    my $fmri = shift;
+    my $opts = $_[0] // {};
+    my @fmris;
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    
+    $fmri ||= '*';
+   
+    # remove leading 'svc:/'
+    $fmri =~ s/^svc:\///;
 
-    my @cmd = ($SVCS, qw(-H -o fmri), $fmri);
+    my @cmd = ($SVCCFG, 'list', $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $fmris, '-|', @cmd
         or die "ERROR: cannot get list of FMRI\n";
 
-    my @fmris = <$fmris>;
-    chomp(@fmris);
+    while (my $elem = <$fmris>) {
+        chomp $elem;
+        push @fmris, "svc:/$elem" if !$opts->{instancesonly};
+        
+        my @cmd2 = ($SVCCFG, '-s', $elem, 'list');
 
-    return @fmris;
+        open my $instances, '-|', @cmd2
+            or die "ERROR: cannot get instances of '$elem'\n";
+
+        while (<$instances>) {
+            chomp;
+            next if /:properties/;
+            push @fmris, "svc:/$elem:$_";
+        }
+        close $instances;
+    }
+
+    return [ @fmris ];
 }
 
 sub fmriExists {
     my $self = shift;
     my $fmri = shift;
+    my $opts = shift;
 
-    my @fmris = $self->listFMRI();
+    # remove instance name
+    my ($baseFmri) = $fmri =~ /^((?:svc:)?[^:]+)/;
 
-    return grep { $fmri eq $_ } @fmris;
+    return grep { $fmri eq $_ } @{$self->listFMRI($baseFmri, $opts)};
 }
 
-sub fmriState {
+sub addFMRI {
     my $self = shift;
     my $fmri = shift;
+    my $opts = $_[0] // {};
 
-    $self->fmriExists($fmri) or die "ERROR: FMRI '$fmri' does not exist\n";
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
 
-    my @cmd = ($SVCS, qw(-H -o state), $fmri);
+    # remove leading 'svc:/'
+    $fmri =~ s/^svc:\///;
+
+    my @cmd = ($SVCCFG, 'add', $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    open my $fmris, '-|', @cmd
-        or die "ERROR: cannot get list of FMRI\n";
-
-    chomp(my $state = <$fmris>);
-
-    return $state;
+    system(@cmd) and die "ERROR: cannot add '$fmri'\n";
 }
 
-sub fmriOnline {
-    my $self = shift;
-
-    return $self->fmriState(shift) eq 'online';
-}
-
-sub propertyExists {
+sub deleteFMRI {
     my $self = shift;
     my $fmri = shift;
-    my $property = shift;
+    my $opts = $_[0] // {};
 
-    my @cmd = ($SVCPROP, qw(-q -p), $property, $fmri);
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+
+    my @cmd = ($SVCCFG, 'delete', $fmri);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    return !system(@cmd);
+    system(@cmd) and die "ERROR: cannot delete $fmri\n";
 }
 
 sub addInstance {
     my $self = shift;
     my $fmri = shift;
     my $instance = shift;
+    my $opts = $_[0] // {};
+
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
 
     my @cmd = ($SVCCFG, '-s', $fmri, 'add', $instance);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
@@ -97,45 +126,87 @@ sub addInstance {
 
     $self->addPropertyGroup("$fmri:$instance", 'general', 'framework');
     $self->setProperty("$fmri:$instance", 'general/complete', $instance);
-    $self->setProperty("$fmri:$instance", 'general/enabled', 'false');
-
-    return 1;
+    $self->setProperty("$fmri:$instance", 'general/enabled',
+        $opts->{enabled} ? 'true' : 'false');
 }
 
-sub deleteFMRI {
+sub getPropertyGroups {
     my $self = shift;
     my $fmri = shift;
+    my $opts = $_[0] // {};
 
-    my @cmd = ($SVCCFG, 'delete', $fmri);
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+
+    my $pg = [];
+    my @cmd = ($SVCCFG, '-s', $fmri, 'listpg');
+
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    system(@cmd) and die "ERROR: cannot delete $fmri\n";
+    open my $props, '-|', @cmd
+        or die "ERROR: cannot get property group of FMRI '$fmri'\n";
 
-    return 1;
+    while (my $prop = <$props>){
+        chomp $prop;
+        my ($name, $type) = split /\s+/, $prop, 2;
+        push @$pg, $name; 
+    }
+    
+    return $pg;
+}
+
+sub propertyExists {
+    my $self = shift;
+    my $fmri = shift;
+    my $property = shift;
+    my $opts = shift;
+    
+    # extract property group
+    my ($pg) = $property =~ /^([^\/]+)/;
+
+    return grep { $property eq $_ } keys %{$self->getProperties($fmri, $pg, $opts)};
+}
+
+sub propertyGroupExists {
+    my $self = shift;
+    my $fmri = shift;
+    my $pg   = shift;
+    my $opts = shift;
+
+    return grep { $pg eq $_ } @{$self->getPropertyGroups($fmri, $opts)};
 }
 
 sub addPropertyGroup {
     my $self = shift;
     my $fmri = shift;
-    my $pg = shift;
-    my $type = $_[0] // 'application';
+    my $pg   = shift;
+    my $type = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    
+    # set type to application if not specified
+    $type //= 'application';
+
+    return if $self->propertyGroupExists($fmri, $pg, $opts);
 
     my @cmd = ($SVCCFG, '-s', $fmri, 'addpg', $pg, $type);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add property group to $fmri\n";
-
-    return 1;
 }
 
 sub deletePropertyGroup {
     my $self = shift;
     my $fmri = shift;
-    my $pg = shift;
-
+    my $pg   = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+        
     my @cmd = ($SVCCFG, '-s', $fmri, 'delpg', $pg);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot delete property group from $fmri\n";
-
-    return 1;
 }
 
 sub setProperty {
@@ -143,83 +214,142 @@ sub setProperty {
     my $fmri = shift;
     my $property = shift;
     my $value = shift;
+    my $type  = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
 
-    #properties are stored as string per default
-    my $type = 'astring';
+    # guess property type if not provided
+    $type || do {
+        $type = 'astring';
 
-    for ($value){
-        /^\d+$/ && do {
-            $type = 'count';
-            last;
-        };
+        for ($value){
+            /^\d+$/ && do {
+                $type = 'count';
+                last;
+            };
 
-        /^(?:true|false)$/i && do {
-            $type = 'boolean';
-            last;
-        };
-    }
+            /^(?:true|false)$/i && do {
+                $type = 'boolean';
+                last;
+            };
+        }
+    };
 
-    my @cmd = $self->propertyExists($fmri, $property) ?
+    my @cmd = $self->propertyExists($fmri, $property, $opts) ?
         ($SVCCFG, '-s', $fmri, 'setprop', $property, '=', "\"$value\"")
         : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:", "\"$value\"");
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot set property $property of $fmri\n";
-
-    return 1;
 }
 
 sub setProperties {
     my $self = shift;
     my $fmri = shift;
     my $properties = shift;
+    my $opts = shift;
 
     for my $key (keys %$properties){
-        $self->setProperty($fmri, $key, $properties->{$key})
+        $self->setProperty($fmri, $key, $properties->{$key}, undef, $opts)
     }
-
-    return 1;
-}
-
-sub getProperty {
-    my $self = shift;
-    my $fmri = shift;
-    my $property = shift;
-
-    my @cmd = ($SVCPROP, '-p', $property, $fmri);
-
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    open my $props, '-|', @cmd
-        or die "ERROR: cannot get property of FMRI\n";
-
-    chomp (my $value = <$props>);
-    #remove escape before whitespace
-    $value =~ s/\\(\s)/$1/g;
-
-    return $value;
 }
 
 sub getProperties {
     my $self = shift;
     my $fmri = shift;
-    my $propGroup = shift;
+    my $pg   = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
 
     my $properties = {};
 
-    my @cmd = ($SVCPROP, '-p', $propGroup, $fmri);
+    my @cmd = ($SVCCFG, '-s', $fmri, 'listprop', $pg);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    open my $props, '-|', @cmd
+        or die "ERROR: cannot get properties of FMRI '$fmri'\n";
+
+    while (<$props>){
+        chomp;
+        my ($name, $type, $value) = split /\s+/, $_, 3;
+        next if $name eq $pg;
+        #remove quotes
+        $value =~ s/^"|"$//g;
+        $properties->{$name} = $value;
+
+    }
+    
+    return $properties;
+}
+
+sub getSMFProperties {
+    my $self = shift;
+    my $fmri = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+
+    my $properties = {};
+
+    my @cmd = ($SVCCFG, '-s', $fmri, 'listprop');
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $props, '-|', @cmd
         or die "ERROR: cannot get properties of FMRI\n";
 
-    while (my $prop = <$props>){
-        chomp $prop;
-        my ($name, $type, $value) = split /\s+/, $prop, 3;
-        #remove escape before whitespace
-        $value =~ s/\\(\s)/$1/g;
-        $properties->{$name} = $value;
-
+    while (<$props>) {
+        chomp;
+        my ($pg, $prop, $type, $value) = /^(?:([-\w]+)\/)?([-\w]+)\s+([-\w]+)(?:\s+(.+))?$/;
+        next if !$prop || !$type;
+        # remove quotes from $value
+        $value =~ s/^"|"$//g if $value;
+        if ($pg) {
+            $properties->{$pg}->{members}->{$prop}->{type} = $type;
+            $properties->{$pg}->{members}->{$prop}->{value} = $value;
+        }
+        else {
+            $properties->{$prop}->{type} = $type;
+            $properties->{$prop}->{value} = $value // '';
+        }
     }
+
     return $properties;
+}
+
+sub setSMFProperties {
+    my $self       = shift;
+    my $fmri       = shift;
+    my $properties = shift;
+    my $opts = $_[0] // {};
+    
+    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
+        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+
+    $self->addFMRI($fmri, $opts) if !$self->fmriExists($fmri, $opts);
+    # extract property groups
+    my @pg = map { $properties->{$_}->{members} ? $_ : () } keys $properties;
+
+    for my $pg (@pg) {
+        $self->addPropertyGroup($fmri, $pg, $properties->{$pg}->{type}, $opts);
+        for my $prop (keys %{$properties->{$pg}->{members}}) {
+            $self->setProperty($fmri, "$pg/$prop",
+                $properties->{$pg}->{members}->{$prop}->{value},
+                $properties->{$pg}->{members}->{$prop}->{type},
+                $opts);
+        }
+        delete $properties->{$pg};
+    }
+
+    for my $prop (keys %$properties) {
+        $self->setProperty($fmri, $prop,
+            $properties->{$prop}->{value},
+            $properties->{$prop}->{type},
+            $opts);
+    }
 }
 
 1;
@@ -331,6 +461,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2015-04-26 had zone support added
 2014-12-15 had FMRI online/state added
 2014-10-03 had Initial Version
 

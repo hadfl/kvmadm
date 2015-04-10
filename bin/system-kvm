@@ -22,8 +22,8 @@ my %SMF_STATUS = (
     SMF_EXIT_ERR_PERM    => 100,
 );
 
-my $RUN_PATH = '/var/run/kvm';
-my $FMRI     = 'svc:/system/kvm';
+my $FMRI     = KVMadm::Config->fmri();
+my $RUN_PATH = KVMadm::Config->runPath();
 my $ACPI_TO  = 120;
 
 my $sendMonitor = sub {
