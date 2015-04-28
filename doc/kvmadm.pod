@@ -84,6 +84,13 @@ for each serial the following properties can be set:
     serial_name
     index
 
+kvmadm supports zones. zone properties are according to I<zonecfg>.
+global properties can be set as "property" : "value" pair, single
+resources as "resource" : { } hash structure and multiple resources
+as "resource" : [ { }, ... ] array of hash structures. B<vnics> and
+B<zvols> must not be added to the zone configuration as kvmadm will
+add them automatically when setting up the zone.
+
 =head2 B<import>
 
 imports a KVM configuration from a file.
@@ -127,9 +134,31 @@ copy a KVM instance
 
     kvmadm import test-kvm.json
 
+basic zone setup
+
+    "zone" : {
+        "zonepath" : "/zones/mykvm",
+        "brand"    : "lipkg",
+        "ip-type"  : "exclusive"
+    }
+
+adding readonly zone access to a vnc password file
+
+    "zone" : {
+        ...
+        "fs" : [
+            {
+                "dir"     : "/etc/opt/kvmadm/myvncpw",
+                "special" : "/etc/opt/kvmadm/myvncpw,
+                "type"    : "lofs",
+                "options" : "[ro,nodevices]"
+            }
+        ]
+    }
+
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -158,6 +187,7 @@ stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2014-10-03 had Initial Version
 
 =cut

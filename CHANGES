@@ -1,3 +1,33 @@
+commit 09bf6065bbad7d7554097f5960cff86e3a5c9af3
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Apr 28 11:51:49 2015 +0200
+
+    - readme
+
+commit 686791986feb93471e4e970b25fe9c7fe8c8c201
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Apr 28 10:59:58 2015 +0200
+
+    - ready to merge
+
+commit 4b77786f3cb38509baa512b91aaf81d698a68865
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Apr 10 12:04:36 2015 +0200
+
+    - almost there
+
+commit 52263ce48771e3a822875215bbeb0a1f7681e6ac
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat Apr 4 10:35:38 2015 +0200
+
+    - fix uninitialized string warning if boot is not set
+
+commit b7ab7da16341f71e78eb86ea57245a2b15109d52
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 1 09:40:11 2015 +0200
+
+    ready for 0.8.2
+
 commit 631bd08b8ed12103b17bc30198b0be7cc9d8b0bf
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Mar 31 16:31:36 2015 +0200
