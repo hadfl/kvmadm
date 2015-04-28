@@ -12,9 +12,10 @@ use JSON::PP;
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
 use Illumos::SMF;
+use Illumos::Zones;
 
-my $FMRI        = 'svc:/system/kvm';
-my $RUN_PATH    = '/var/run/kvm';
+my $FMRI        = KVMadm::Config->fmri();
+my $RUN_PATH    = KVMadm::Config->runPath();
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
 my $kvmConfig;
 
@@ -89,6 +90,10 @@ sub writeConfig {
 
 sub main {
     my $mainOpt = shift;
+
+    # check if we are in global zone
+    Illumos::Zones->isGZ or die "ERROR: kvmadm can only be run from global zone\n";
+
     defined $mainOpt or pod2usage(1);
 
     $kvmConfig = KVMadm::Config->new();
@@ -277,6 +282,13 @@ for each serial the following properties can be set:
     serial_name
     index
 
+kvmadm supports zones. zone properties are according to I<zonecfg>.
+global properties can be set as "property" : "value" pair, single
+resources as "resource" : { } hash structure and multiple resources
+as "resource" : [ { }, ... ] array of hash structures. B<vnics> and
+B<zvols> must not be added to the zone configuration as kvmadm will
+add them automatically when setting up the zone.
+
 =head2 B<import>
 
 imports a KVM configuration from a file.
@@ -320,9 +332,31 @@ copy a KVM instance
 
     kvmadm import test-kvm.json
 
+basic zone setup
+
+    "zone" : {
+        "zonepath" : "/zones/mykvm",
+        "brand"    : "lipkg",
+        "ip-type"  : "exclusive"
+    }
+
+adding readonly zone access to a vnc password file
+
+    "zone" : {
+        ...
+        "fs" : [
+            {
+                "dir"     : "/etc/opt/kvmadm/myvncpw",
+                "special" : "/etc/opt/kvmadm/myvncpw,
+                "type"    : "lofs",
+                "options" : "[ro,nodevices]"
+            }
+        ]
+    }
+
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -351,6 +385,7 @@ stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2014-10-03 had Initial Version
 
 =cut

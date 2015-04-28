@@ -7,12 +7,14 @@ Manage KVM instances under SMF control
 
 Kvmadm takes care of setting up kvm instances on illumos derived operating
 systems with SMF support.  The kvm hosts run under smf control.  Each host
-will show up as a separate SMF service instance.
+will show up as a separate SMF service instance. Kvmadm supports KVM instances
+set-up as SMF service instance within individual zones.
 
 Setup
 -----
 
 Kvmadm uses only core perl, so it should install out of the box on any machine with a current perl installation.
+It is advised to install kvmadm into a separate directory as the base directory of kvmadm will be mounted in the zones.
 
 ```sh
 wget https://github.com/hadfl/kvmadm/releases/download/v0.8.2/kvmadm-0.8.2.tar.gz

@@ -6,7 +6,8 @@ use lib "$FindBin::Bin/../lib";
 use strict;
 use warnings;
 
-use File::Basename;
+use File::Path qw(make_path);
+use File::Basename qw(basename);
 use IO::Socket::UNIX qw(SOCK_STREAM);
 use POSIX qw(SIGTERM);
 use KVMadm::Config;
@@ -22,8 +23,9 @@ my %SMF_STATUS = (
     SMF_EXIT_ERR_PERM    => 100,
 );
 
-my $RUN_PATH = '/var/run/kvm';
-my $FMRI     = 'svc:/system/kvm';
+my $FMRI     = KVMadm::Config->fmri();
+my $RUN_PATH = KVMadm::Config->runPath();
+my $OLD_RUN  = '/var/run/kvm';
 my $ACPI_TO  = 120;
 
 my $sendMonitor = sub {
@@ -63,6 +65,23 @@ my $cleanupRunPath = sub {
     }
 };
 
+my $getPid = sub {
+    my $kvmName = shift;
+
+    my $pidFile;
+
+    open $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid'
+        or open $pidFile, '<', $OLD_RUN . '/' . $kvmName . '.pid' or do {
+
+        print "Cannot open pid file\n";
+        exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+    };
+    chomp (my $pid = <$pidFile>);
+    close $pidFile;
+
+    return $pid;
+};
+
 # check if FMRI is set
 $ENV{SMF_FMRI} || do {
     print "SMF framework variables are not initialised.\n";
@@ -70,7 +89,7 @@ $ENV{SMF_FMRI} || do {
 };
 
 # check if run directory exists
--d $RUN_PATH || mkdir($RUN_PATH, 0700) || do {
+-d $RUN_PATH || make_path($RUN_PATH, { mode => 0700 }) || do {
     print "Cannot create directory $RUN_PATH\n";
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
 };
@@ -107,13 +126,6 @@ for (shift){
         my $shutdownType;
         my $cleanup;
 
-        open my $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid' or do {
-            print "Cannot open pid file\n";
-            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
-        };
-        chomp (my $pid = <$pidFile>);
-        close $pidFile;
-
         local $@;
         eval {
             local $SIG{__DIE__};
@@ -124,6 +136,7 @@ for (shift){
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
         
+        my $pid = $getPid->($kvmName);
         for ($shutdownType){
             /^acpi$/ && do {
                 $acpiShutdown->($kvmName);
@@ -174,7 +187,7 @@ __END__
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -198,6 +211,7 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2014-11-06 had Initial Version
 
 =cut
