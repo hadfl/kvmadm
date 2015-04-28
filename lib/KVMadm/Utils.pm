@@ -231,12 +231,21 @@ sub vnc {
 
     return sub {
         my $vnc = shift;
+        my $cfg = shift;
 
         return undef if $vnc =~ /^sock(?:et)?$/i;
 
         my ($ip, $port) = $vnc =~ /^(?:(\d{1,3}(?:\.\d{1,3}){3}):)?(\d+)$/i;
         $ip //= '127.0.0.1';
         return "ERROR: vnc port not valid" if !defined $port;
+
+        $cfg->{zone} && do {
+            print STDERR "\nWARNING: you are going to use VNC bound to $ip:$port within a zone.\n"
+                       . "           you have to manually add a vnic to the zone and set it up properly within the zone.\n"
+                       . "           to avoid this, use \"vnc\" : \"socket\" in your configuration and 'kvmcli vnc' to forward it to IP.\n\n"; 
+
+            return undef;
+        };
 
         my @ips = qw(0.0.0.0);
         open my $inetAddr, '-|', $IFCONFIG or die "ERROR: cannot get IP addresses\n";
