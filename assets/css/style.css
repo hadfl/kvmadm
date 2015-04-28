@@ -16,6 +16,10 @@ body {
     background-color: #50c800;    
 }
 
+h2 > a:not([href]) {
+    text-decoration: none;
+}
+
 /* our stuff */
 
 #banner {
