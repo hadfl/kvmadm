@@ -86,13 +86,13 @@ body {
 
 @media (min-width: 750px) {
     .thumbnail.feature {
-        min-height: 100px;
+        min-height: 200px;
     }
 }
 
 @media (min-width: 992px) {
     .thumbnail.feature {
-        min-height: 300px;
+        min-height: 400px;
     }
 }
 
