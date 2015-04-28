@@ -31,10 +31,10 @@ sub progress {
     my $self = shift;
 
     # just in case if someone calls progress w/o init first
-    $self->{state} =~ /^\d/ || $self->init;
+    $self->{state} =~ /^\d$/ || $self->init;
 
-    print "\b$self->{chars}->[$self->{state}++]";
     $self->{state} %= @{$self->{chars}};
+    print "\b$self->{chars}->[$self->{state}++]";
 }
 
 1;
