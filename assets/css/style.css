@@ -19,7 +19,7 @@ body {
 /* our stuff */
 
 #banner {
-    background-image: url(../images/IMG_0134.jpg);
+    background-image: url(../images/IMG_0136.jpg);
     background-position: center;
     background-size: cover;
     color: #fff;
@@ -86,13 +86,13 @@ body {
 
 @media (min-width: 750px) {
     .thumbnail.feature {
-        min-height: 390px;
+        min-height: 100px;
     }
 }
 
 @media (min-width: 992px) {
     .thumbnail.feature {
-        min-height: 490px;
+        min-height: 300px;
     }
 }
 
