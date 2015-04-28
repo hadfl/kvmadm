@@ -81,6 +81,29 @@ sub fmriExists {
     return grep { $fmri eq $_ } @{$self->listFMRI($baseFmri, $opts)};
 }
 
+sub fmriState {
+    my $self = shift;
+    my $fmri = shift;
+    my $opts = shift;
+
+    $self->fmriExists($fmri, $opts) or die "ERROR: FMRI '$fmri' does not exist\n";
+
+    my @cmd = ($SVCS, $opts->{zonename} ? ('-z', $opts->{zonename}) : (), qw(-H -o state), $fmri);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    open my $fmris, '-|', @cmd
+        or die "ERROR: cannot get list of FMRI\n";
+
+    chomp(my $state = <$fmris>);
+    return $state;
+}
+
+sub fmriOnline {
+    my $self = shift;
+    
+    return $self->fmriState(shift, shift) eq 'online';
+}
+
 sub addFMRI {
     my $self = shift;
     my $fmri = shift;
@@ -437,7 +460,7 @@ gets a set of properties of a property group of a FMRI
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -461,7 +484,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
-2015-04-26 had zone support added
+2015-04-28 had Zone support
 2014-12-15 had FMRI online/state added
 2014-10-03 had Initial Version
 

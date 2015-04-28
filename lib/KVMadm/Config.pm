@@ -3,7 +3,6 @@ package KVMadm::Config;
 use strict;
 use warnings;
 
-use File::Path qw(make_path);
 use File::Basename qw(dirname);
 use Illumos::SMF;
 use Illumos::Zones;
@@ -20,7 +19,7 @@ my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
 my $FMRI     = 'svc:/system/kvm';
 my $PGRP     = 'kvmadm';
-my $RUN_PATH = "/var$BASEDIR/$PGRP/run";
+my $RUN_PATH = "/var$BASEDIR/run";
 my $VIRTIO_TXTIMER_DEFAULT = 200000;
 my $VIRTIO_TXBURST_DEFAULT = 128;
 
@@ -237,7 +236,7 @@ my $SCHEMA = sub {
             nic_name    => {
                 description => 'name of the vnic. will be created if it does not exist',
                 example     => '"nic_name" : "mykvm0"',
-                validator   => $sv->nicName(),
+                validator   => $sv->nicName(Illumos::Zones->isGZ),
             },
             index   => {
                 description => 'index of the vnic',
@@ -431,8 +430,6 @@ sub new {
 
 # public methods
 sub runPath {
-    -d $RUN_PATH || make_path($RUN_PATH, { mode => 0700 })
-        or die "ERROR: cannot create kvmadm run path '$RUN_PATH'\n";
     return $RUN_PATH;
 }
 
@@ -607,7 +604,17 @@ sub listKVM {
     my $self = shift;
     my $kvmName = shift;
 
-    my $fmris = $kvmName ? [ "$FMRI:$kvmName" ] : $self->{smf}->listFMRI($FMRI, { instancesonly => 1 });
+    my $fmris = [];
+    if ($kvmName) {
+        $fmris = [ "$FMRI:$kvmName" ];
+    }
+    else {
+        my $zones = $self->{zone}->listZones;
+        for my $zone (@$zones) {
+            push @$fmris, @{$self->{smf}->listFMRI($FMRI, { zonepath => $zone->{zonename} ne 'global'
+                ? $zone->{zonepath} : undef, instancesonly => 1 })};
+        }
+    }
 
     my %instances;
 
@@ -794,7 +801,7 @@ returns the VNC password
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -818,6 +825,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2014-10-03 had Initial Version
 
 =cut

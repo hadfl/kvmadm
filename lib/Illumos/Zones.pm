@@ -327,12 +327,10 @@ sub resourceArrays {
     return $RESARRAYS->();
 }
 
+# zoneName is a static method
 sub zoneName {
-    my $self = shift;
-
     my @cmd = ($ZONENAME);
 
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $zones, '-|', @cmd
         or die "ERROR: cannot get zonename\n";
 
@@ -341,10 +339,9 @@ sub zoneName {
     return $zonename;
 }
 
+# isGZ is a static method
 sub isGZ {
-    my $self = shift;
-
-    return $self->zoneName eq 'global';
+    return zoneName() eq 'global';
 }
 
 sub listZones {
@@ -639,6 +636,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2015-04-10 had Initial Version
 
 =cut

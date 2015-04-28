@@ -111,6 +111,7 @@ sub diskPath {
 
 sub nicName {
     my $self = shift;
+    my $isGZ = shift;
 
     return sub {
         my ($nicName, $nic) = @_;
@@ -125,7 +126,7 @@ sub nicName {
             my @nicProps = split ':', $_, 3;
             next if $nicProps[0] ne $nicName;
 
-            $nic->{over} && $nic->{over} ne $nicProps[1]
+            $nic->{over} && $isGZ && $nic->{over} ne $nicProps[1]
                 && die "ERROR: vnic specified to be over '" . $nic->{over}
                     . "' but is over '" . $nicProps[1] . "' in fact\n";
 
@@ -134,7 +135,7 @@ sub nicName {
                     . "' but is '" . $nicProps[2] . "' in fact\n";
 
             #reset mtu size in case it has been changed
-            exists $nic->{mtu} && do {
+            exists $nic->{mtu} && $isGZ && do {
                 @cmd = ($DLADM, qw(set-linkprop -p), "mtu=$nic->{mtu}", $nicName);
                 system(@cmd)
                     && die "ERROR: cannot set mtu to '$nic->{mtu}' on vnic '$nicName'\n";
@@ -416,7 +417,7 @@ deletes all zvols attached to the config
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -440,6 +441,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2014-10-07 had Initial Version
 
 =cut

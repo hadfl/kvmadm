@@ -12,6 +12,7 @@ use IO::Socket::UNIX qw(SOCK_STREAM);
 use IO::Select;
 use KVMadm::Config;
 use Illumos::SMF;
+use Illumos::Zones;
 
 my $FMRI        = KVMadm::Config->fmri();
 my $RUN_PATH    = KVMadm::Config->runPath();
@@ -141,6 +142,10 @@ sub sockConn {
 
 sub main {
     my $mainOpt = shift;
+
+    # check if we are in global zone
+    Illumos::Zones->isGZ or die "ERROR: kvmadm can only be run from global zone\n";
+
     defined $mainOpt or pod2usage(1);
 
     $kvmConfig = KVMadm::Config->new();
@@ -151,9 +156,11 @@ sub main {
             my $types = shift @ARGV;
             defined $kvmName or pod2usage(1);
 
+            my $config = $kvmConfig->readConfig($kvmName);
             my $smf = Illumos::SMF->new();
-            $smf->fmriOnline("$FMRI:$kvmName")
-                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
+                zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
 
             my @types = !$types || $types eq 'all' ? @MON_INFO : split /,/, $types;
             for my $type (@types){
@@ -171,9 +178,11 @@ sub main {
             my $kvmName = shift @ARGV;
             defined $kvmName or pod2usage(1);
 
+            my $config = $kvmConfig->readConfig($kvmName);
             my $smf = Illumos::SMF->new();
-            $smf->fmriOnline("$FMRI:$kvmName")
-                or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
+                zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
 
             sockConn("$RUN_PATH/$kvmName.monitor");
 
@@ -185,8 +194,8 @@ sub main {
             defined $kvmName && defined $vncPort or pod2usage(1);
 
             my $smf = Illumos::SMF->new();
-            $smf->fmriOnline("$FMRI:$kvmName")
-                or die "ERROR: KVM instance '$kvmName' not online\n";
+            #$smf->fmriOnline("$FMRI:$kvmName")
+            #    or die "ERROR: KVM instance '$kvmName' not online\n";
 
             my $config = $kvmConfig->readConfig($kvmName);
             !$config->{vnc} || $config->{vnc} !~ /^sock(?:et)?$/i
@@ -286,7 +295,7 @@ forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP p
 
 =head1 COPYRIGHT
 
-Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -315,6 +324,7 @@ stolen from Joyent's vmadm, the bugs and misfeatures are all exclusive to kvmadm
 
 =head1 HISTORY
 
+2015-04-28 had Zone support
 2015-01-05 had Initial Version
 
 =cut
