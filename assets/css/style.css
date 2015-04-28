@@ -1,0 +1,136 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+/* bootstrap overrides */
+
+.btn-lg, .btn-group-lg>.btn {
+    border-radius: 0px;
+}
+
+.btn-success {
+    background-color: #49b700;
+    border-color: #40a000;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active {
+    background-color: #50c800;    
+}
+
+/* our stuff */
+
+#banner {
+    background-image: url(../images/IMG_1051.jpg);
+    background-position: center;
+    background-size: cover;
+    color: #fff;
+    padding-top: 10ex;
+    margin-bottom: 10ex;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 5ex;    
+}
+
+#oposs-logo {
+    position: absolute;
+    top: -6ex;
+    right: 0ex;
+    height: 35px;
+}
+
+@media (min-width: 750px) {
+    #oposs-logo {
+        height: 41px;
+    }
+}
+
+#banner h1 {
+    font-size: 310%;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0px 0px 15px rgba(0, 0, 0, 1);    
+}
+
+@media (min-width: 750px) {
+    #banner h1 {
+        font-size: 600%;
+    }
+}
+
+#banner .claim {
+    font-size: 170%;
+    margin-bottom: 2ex;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+
+@media (min-width: 750px) {
+    #banner .claim {
+        font-size: 300%;
+        margin-bottom: 2ex;
+    }
+}
+
+.thumbnail.feature {
+    border-radius: 0px;
+    background-color: #1f1f24;
+    color: #fff;
+}
+
+.thumbnail.feature:hover, .thumbnail.feature:active {   
+   background-color: #112;
+}
+
+.thumbnail.feature:hover .icon, .thumbnail.feature:active .icon {
+   color: #9aafff;
+   text-shadow: 0px 0px 5px #9aafff;   
+}
+
+@media (min-width: 750px) {
+    .thumbnail.feature {
+        min-height: 390px;
+    }
+}
+
+@media (min-width: 992px) {
+    .thumbnail.feature {
+        min-height: 490px;
+    }
+}
+
+.thumbnail.feature .icon {
+    font-size: 400%;
+    text-align: center;
+    color: #87a0fe;
+    margin-top: 0.6ex;
+    margin-bottom: -0.5ex;
+} 
+
+@media (min-width: 750px) {
+    .thumbnail.feature .icon {
+         font-size: 500%;
+    }
+}
+
+.thumbnail.feature h3 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 2ex;
+}
+
+.thumbnail.feature p {
+    color: #fff;
+    line-height: 150%;
+}
+
+#footer {
+    padding-top: 4ex;
+    margin-top: 10ex;
+    padding-bottom: 4ex;
+    background-color: black;
+    color: #aaa;
+}
+
+#footer a {
+    color: #aaa;
+}
+
+    
