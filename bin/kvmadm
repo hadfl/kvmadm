@@ -17,8 +17,6 @@ use Illumos::Zones;
 
 my $FMRI        = KVMadm::Config->fmri();
 my $RUN_PATH    = KVMadm::Config->runPath();
-my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
-my $RCV_TMO     = 3;
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
 my $kvmConfig;
 
@@ -434,6 +432,18 @@ function for details.
 
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
+
+=head2 B<start>
+
+starts the KVM instance B<kvm_name>
+
+=head2 B<stop>
+
+stops the KVM instance B<kvm_name>
+
+=head2 B<restart>
+
+restarts the KVM instance B<kvm_name>
 
 =head2 B<show-cmd>
 
