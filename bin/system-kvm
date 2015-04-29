@@ -34,7 +34,7 @@ my $sendMonitor = sub {
 
     my $sock = IO::Socket::UNIX->new(
         Type => SOCK_STREAM,
-        Peer => $RUN_PATH . '/' . $name . '.monitor',
+        Peer => "$RUN_PATH/$name/$name.monitor",
     ) || do {
         print "Cannot open socket $!\n";
         exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
@@ -58,7 +58,7 @@ my $cleanupRunPath = sub {
     my $counter = $ACPI_TO;
     while($counter--){
         kill (0, $pid) || do {
-            unlink glob $RUN_PATH . '/' . $name . '.*';
+            unlink glob "$RUN_PATH/$name/$name.*";
             last;
         };
         sleep 1;
@@ -70,7 +70,7 @@ my $getPid = sub {
 
     my $pidFile;
 
-    open $pidFile, '<', $RUN_PATH . '/' . $kvmName . '.pid'
+    open $pidFile, '<', "$RUN_PATH/$kvmName/$kvmName.pid"
         or open $pidFile, '<', $OLD_RUN . '/' . $kvmName . '.pid' or do {
 
         print "Cannot open pid file\n";
@@ -88,13 +88,13 @@ $ENV{SMF_FMRI} || do {
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
 };
 
+my ($kvmName) = $ENV{SMF_FMRI} =~ /^$FMRI:([-\w]+)$/;
+
 # check if run directory exists
--d $RUN_PATH || make_path($RUN_PATH, { mode => 0700 }) || do {
-    print "Cannot create directory $RUN_PATH\n";
+-d "$RUN_PATH/$kvmName" || make_path("$RUN_PATH/$kvmName", { mode => 0700 }) || do {
+    print "Cannot create directory $RUN_PATH/$kvmName\n";
     exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};   
 };
-
-my ($kvmName) = $ENV{SMF_FMRI} =~ /^$FMRI:([-\w]+)$/;
 
 for (shift){
     /^start$/ && do {

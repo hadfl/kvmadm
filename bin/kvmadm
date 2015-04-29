@@ -11,6 +11,7 @@ use File::Temp qw(tempfile);
 use JSON::PP;
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
+use KVMadm::Monitor;
 use Illumos::SMF;
 use Illumos::Zones;
 
@@ -163,6 +164,80 @@ sub main {
             print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
             last;
         };
+        /^state$/ && do {
+            my $kvmName = shift @ARGV;
+
+            my $config = $kvmConfig->listKVM($kvmName);
+            my $smf  = Illumos::SMF->new();
+            my $zone = Illumos::Zones->new();
+
+            for my $kvmName (keys %$config) {
+                my $smfState = '';
+
+                if ($config->{$kvmName}->{zone}) {
+                    $smfState = $zone->zoneState($kvmName) eq 'running'
+                        ? $smf->fmriState("$FMRI:$kvmName", { zonename => $kvmName })
+                        : 'offline';
+                }
+                else {
+                    $smfState = $smf->fmriState("$FMRI:$kvmName");
+                }
+                print $smfState . (' ' x (15 - length($smfState))) . $kvmName . "\n";
+            }
+            last;
+        };
+        /^start$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+
+            if ($config->{zone}) {
+                my $zone = Illumos::Zones->new();
+                $zone->boot($kvmName);
+                last;
+            }
+            else {
+                my $smf = Illumos::SMF->new();
+                $smf->enable("$FMRI:$kvmName");
+            }
+            last;
+
+        };
+        /^stop$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+
+            if ($config->{zone}) {
+                my $zone = Illumos::Zones->new();
+                $zone->shutdown($kvmName);
+                last;
+            }
+            else {
+                my $smf = Illumos::SMF->new();
+                $smf->disable("$FMRI:$kvmName");
+            }
+            last;
+        };
+        /^restart$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+
+            if ($config->{zone}) {
+                my $zone = Illumos::Zones->new();
+                $zone->reboot($kvmName);
+                last;
+            }
+            else {
+                my $smf = Illumos::SMF->new();
+                $smf->restart("$FMRI:$kvmName");
+            }
+            last;
+        };
         /^show-cmd$/ && do {
             my $kvmName = shift @ARGV;
             defined $kvmName or pod2usage(1);
@@ -171,6 +246,64 @@ sub main {
                 print /^-/ ? "\n$_" : " $_";
             }
             print "\n";
+
+            last;
+        };
+        /^info$/ && do {
+            my $kvmName = shift @ARGV;
+            my $types = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            my $smf = Illumos::SMF->new();
+            my $mon = KVMadm::Monitor->new();
+
+            $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
+                zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            my @types = !$types || $types eq 'all' ? @MON_INFO : split /,/, $types;
+            for my $type (@types){
+                grep { $_ eq $type } @MON_INFO
+                    or die "ERROR: don't know type '$type'\n";
+                
+                print "QEMU INFO $type:\n";
+                print join("\n", @{$mon->queryMonitor("$RUN_PATH/$kvmName/$kvmName.monitor", "info $type\n")});
+                print "\n\n";
+            }
+
+            last;
+        };
+        /^monitor$/ && do {
+            my $kvmName = shift @ARGV;
+            defined $kvmName or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            my $smf = Illumos::SMF->new();
+            my $mon = KVMadm::Monitor->new();
+
+            $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
+                zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            $mon->sockConn("$RUN_PATH/$kvmName/$kvmName.monitor");
+
+            last;
+        };
+        /^vnc$/ && do {
+            my $kvmName = pop @ARGV;
+            my $vncPort = shift @ARGV;
+            defined $kvmName && defined $vncPort or pod2usage(1);
+
+            my $config = $kvmConfig->readConfig($kvmName);
+            my $smf = Illumos::SMF->new();
+            my $mon = KVMadm::Monitor->new();
+
+            $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
+                zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
+
+            !$config->{vnc} || $config->{vnc} !~ /^sock(?:et)?$/i
+                and die "ERROR: VNC not defined as socket for KVM instance '$kvmName'\n";
+
+            $mon->soCat("$RUN_PATH/$kvmName/$kvmName.vnc", $vncPort);
 
             last;
         };
@@ -216,7 +349,21 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
+    state [kvm_name]
+
+    start <kvm_name>
+
+    stop <kvm_name>
+
+    restart <kvm_name>
+
     show-cmd <kvm_name>
+
+    info <kvm_name> [type,...]
+
+    monitor <kvm_name>
+
+    vnc <[bind_addr:]port> <kvm_name> 
 
     help
 
@@ -308,9 +455,53 @@ function for details.
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
 
+=head2 B<state>
+
+prints the state of the KVM instance(s)
+
+=head2 B<start>
+
+starts the KVM instance B<kvm_name>
+
+=head2 B<stop>
+
+stops the KVM instance B<kvm_name>
+
+=head2 B<restart>
+
+restarts the KVM instance B<kvm_name>
+
 =head2 B<show-cmd>
 
 prints the KVM invocation command for debug purpose
+
+=head2 B<info>
+
+queries information about the running KVM instance from qemu monitor.
+
+type can be one of the following:
+
+     all
+     block
+     blockstats
+     chardev
+     cpus
+     kvm
+     network
+     pci
+     registers
+     qtree
+     usb
+     version
+     vnc
+
+=head2 B<monitor>
+
+connects to the qemu monitor of the running KVM instance
+
+=head2 B<vnc>
+
+forwards the vnc socket to IP
 
 =head1 EXAMPLES
 
@@ -353,6 +544,18 @@ adding readonly zone access to a vnc password file
             }
         ]
     }
+
+query the attached block devices of a KVM instance with the name 'test-kvm'
+
+    kvmcli info test-kvm block
+
+connect to the qemu monitor of the KVM instance with the name 'test-kvm'
+
+    kvmcli monitor test-kvm
+
+forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
+
+    kvmcli vnc 5900 test-kvm
 
 =head1 COPYRIGHT
 

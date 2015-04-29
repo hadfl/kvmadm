@@ -3,6 +3,7 @@ package KVMadm::Config;
 use strict;
 use warnings;
 
+use File::Path qw(make_path);
 use File::Basename qw(dirname);
 use Illumos::SMF;
 use Illumos::Zones;
@@ -30,12 +31,6 @@ my $RESOURCES = {
             special => $BASEDIR,
             type    => 'lofs',
             options => '[ro,nodevices]',
-        },
-        {
-            dir     => $RUN_PATH,
-            special => $RUN_PATH,
-            type    => 'lofs',
-            options => '[nodevices]',
         },
     ],
     device  => [
@@ -343,9 +338,18 @@ my $writeArray = sub {
 };
 
 my $getOwnResources = sub {
-    my $cfg = shift;
+    my $cfg     = shift;
+    my $kvmName = shift;
     # make a copy, not to modify global $RESOURCES
     my $res = { map { $_ => [ @{$RESOURCES->{$_}} ] } keys %$RESOURCES };
+
+    # add run path
+    push @{$res->{fs}}, {
+        dir     => "$RUN_PATH/$kvmName",
+        special => "$RUN_PATH/$kvmName",
+        type    => 'lofs',
+        options => '[nodevices]',
+    };
 
     for my $disk (@{$cfg->{disk}}) {
         my $path = $disk->{disk_path};
@@ -374,8 +378,9 @@ my $getOwnResources = sub {
 };
 
 my $addOwnResources = sub {
-    my $cfg = shift;
-    my $resources = $getOwnResources->($cfg);
+    my $cfg     = shift;
+    my $kvmName = shift;
+    my $resources = $getOwnResources->($cfg, $kvmName);
 
     # don't add nics if network stack is not exclusive
     delete $resources->{net} if $cfg->{zone}->{'ip-type'} ne 'exclusive';
@@ -397,8 +402,9 @@ my $hashEqual = sub {
 };
 
 my $removeOwnResources = sub {
-    my $cfg = shift;
-    my $resources = $getOwnResources->($cfg);
+    my $cfg     = shift;
+    my $kvmName = shift;
+    my $resources = $getOwnResources->($cfg, $kvmName);
 
     for my $resGrp (keys %$resources) {
         for (my $i = $#{$cfg->{zone}->{$resGrp}}; $i >= 0; $i--) {
@@ -486,7 +492,9 @@ sub writeConfig {
 
     $self->checkConfig($config);
 
-    my $smfTemplate = $self->{smf}->getSMFProperties($FMRI);
+    # check if run directory exists
+    -d "$RUN_PATH/$kvmName" || make_path("$RUN_PATH/$kvmName", { mode => 0700 })
+        or die "Cannot create directory $RUN_PATH/$kvmName\n";
 
     my $zPath;
     # set up zone
@@ -499,7 +507,7 @@ sub writeConfig {
             if $self->{smf}->fmriExists("$FMRI:$kvmName");
 
         # add own resources
-        $addOwnResources->($config);
+        $addOwnResources->($config, $kvmName);
 
         $self->{zone}->setZoneProperties($kvmName, $config->{zone});
     }
@@ -511,6 +519,8 @@ sub writeConfig {
     # set up system/kvm SMF template
     $config->{zone} && !$self->{smf}->fmriExists($FMRI, $insertZpath->($zPath)) && do {
         print "setting up system/kvm within zone. this might take a while...\n";
+
+        my $smfTemplate = $self->{smf}->getSMFProperties($FMRI);
         $self->{smf}->setSMFProperties($FMRI, $smfTemplate, $insertZpath->($zPath));
         # delete manifestfile as this will cause system/svc/restarter to delete system/kvm since file not present in zone
         $self->{smf}->deletePropertyGroup($FMRI, 'manifestfiles', $insertZpath->($zPath));
@@ -595,7 +605,7 @@ sub readConfig {
         }
     }
 
-    $config->{zone} && $removeOwnResources->($config);
+    $config->{zone} && $removeOwnResources->($config, $kvmName);
 
     return $config;
 }
@@ -642,8 +652,8 @@ sub getKVMCmdArray {
     push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
     push @cmdArray, ('-smp', $config->{vcpus} // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
-    push @cmdArray, ('-pidfile', $RUN_PATH . '/' . $kvmName . '.pid');
-    push @cmdArray, ('-monitor', 'unix:' . $RUN_PATH . '/' . $kvmName . '.monitor,server,nowait,nodelay');
+    push @cmdArray, ('-pidfile', "$RUN_PATH/$kvmName/$kvmName.pid");
+    push @cmdArray, ('-monitor', 'unix:' . "$RUN_PATH/$kvmName/$kvmName" . '.monitor,server,nowait,nodelay');
     push @cmdArray, ('-uuid', $config->{uuid}) if $config->{uuid};
     push @cmdArray, ('-k', $config->{kb_layout}) if $config->{kb_layout};
 
@@ -651,7 +661,7 @@ sub getKVMCmdArray {
         push @cmdArray, qw(-vga none -nographic);
     }
     elsif ($config->{vnc} =~ /^sock(?:et)?$/i){
-        push @cmdArray, (qw(-vga std -vnc), 'unix:' . $RUN_PATH . '/' . $kvmName . '.vnc'
+        push @cmdArray, (qw(-vga std -vnc), 'unix:' . "$RUN_PATH/$kvmName/$kvmName.vnc"
             . ($config->{vnc_pw_file} ? ',password' : '')); 
     }
     else{
@@ -699,7 +709,7 @@ sub getKVMCmdArray {
 
     for my $serial (@{$config->{serial}}){
         push @cmdArray, ('-chardev', 'socket,id=serial' . $serial->{index}
-            . ',path=' . $RUN_PATH . '/' . $kvmName . '.' . $serial->{serial_name} . ',server,nowait');
+            . ',path=' . "$RUN_PATH/$kvmName/$kvmName" . '.' . $serial->{serial_name} . ',server,nowait');
         push @cmdArray, ('-serial', 'chardev:serial' . $serial->{index});
     }
 

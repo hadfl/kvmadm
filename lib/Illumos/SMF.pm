@@ -4,8 +4,9 @@ use strict;
 use warnings;
 
 # commands
-my $SVCS    = '/usr/bin/svcs';
-my $SVCCFG  = '/usr/sbin/svccfg';
+my $SVCS   = '/usr/bin/svcs';
+my $SVCCFG = '/usr/sbin/svccfg';
+my $SVCADM = '/usr/sbin/svcadm';
 
 # constructor
 sub new {
@@ -13,6 +14,17 @@ sub new {
     my $self = { @_ };
     return bless $self, $class
 }
+# private methods
+my $svcAdm = sub {
+    my $self = shift;
+    my $cmd  = shift;
+    my $fmri = shift;
+
+    my @cmd = ($SVCADM, $cmd, $fmri);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    system(@cmd) and die "ERROR: cannot $cmd '$fmri'\n";
+};
 
 # public methods
 sub refreshFMRI {
@@ -86,8 +98,6 @@ sub fmriState {
     my $fmri = shift;
     my $opts = shift;
 
-    $self->fmriExists($fmri, $opts) or die "ERROR: FMRI '$fmri' does not exist\n";
-
     my @cmd = ($SVCS, $opts->{zonename} ? ('-z', $opts->{zonename}) : (), qw(-H -o state), $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
@@ -102,6 +112,27 @@ sub fmriOnline {
     my $self = shift;
     
     return $self->fmriState(shift, shift) eq 'online';
+}
+
+sub enable {
+    my $self = shift;
+    my $fmri = shift;
+
+    $self->$svcAdm('enable', $fmri);
+}
+
+sub disable {
+    my $self = shift;
+    my $fmri = shift;
+
+    $self->$svcAdm('disable', $fmri);
+}
+
+sub restart {
+    my $self = shift;
+    my $fmri = shift;
+
+    $self->$svcAdm('restart', $fmri);
 }
 
 sub addFMRI {
