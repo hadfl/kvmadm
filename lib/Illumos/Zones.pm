@@ -370,6 +370,33 @@ sub zoneState {
     return $zone ? $zone->{state} : undef;
 }
 
+sub boot {
+    my $self     = shift;
+    my $zoneName = shift;
+
+    my @cmd = ($ZONEADM, '-z', $zoneName, 'boot');
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    system(@cmd) and die "ERROR: cannot boot zone $zoneName\n";
+}
+
+sub shutdown {
+    my $self     = shift;
+    my $zoneName = shift;
+    my @reboot   = $_[0] ? qw(-r) : ();
+
+    my @cmd = ($ZONEADM, '-z', $zoneName, 'shutdown', @reboot);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    system(@cmd) and die "ERROR: cannot shutdown zone $zoneName\n";
+}
+
+sub reboot {
+    my $self = shift;
+
+    $self->shutdown(shift, 1);
+};
+
 sub createZone {
     my $self     = shift;
     my $zoneName = shift;
