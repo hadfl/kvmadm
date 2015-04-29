@@ -75,17 +75,17 @@ h2 > a:not([href]) {
 
 .thumbnail.feature {
     border-radius: 0px;
-    background-color: #1f1f24;
+    background-color: #2C4F66;
     color: #fff;
 }
 
 .thumbnail.feature:hover, .thumbnail.feature:active {   
-   background-color: #112;
+   background-color: #386583;
 }
 
 .thumbnail.feature:hover .icon, .thumbnail.feature:active .icon {
-   color: #9aafff;
-   text-shadow: 0px 0px 5px #9aafff;   
+   color: #66FF00;
+   text-shadow: 0px 0px 10px #66FF00;   
 }
 
 @media (min-width: 750px) {
@@ -103,7 +103,7 @@ h2 > a:not([href]) {
 .thumbnail.feature .icon {
     font-size: 400%;
     text-align: center;
-    color: #87a0fe;
+    color: #51CB00;
     margin-top: 0.6ex;
     margin-bottom: -0.5ex;
 } 
