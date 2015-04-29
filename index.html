@@ -99,11 +99,13 @@
 
                                     <p>With KVMadm you can leaverage Illumos
                                     Zones as an extra layer of insulation
-                                    for your KVM virtual machines. Even if
+                                    for your KVM virtual machines.  Even if
                                     someone manages to break out of the KVM,
-                                    they are still contained in a zone.
+                                    they are still caught inside the zone. 
                                     </p>
-
+                                    <p>Running KVM inside a zone, means you
+                                    can also use the Zone I/O priority
+                                    setting to control disk io</p>
                                 </div>
                             </div>
                         </div>
@@ -117,8 +119,10 @@
 
                                     <p>KVMadm comes with features to easily
                                        provide access to the monitoring and
-                                       vnc facilities of your KVM instances.
-                                    </p>
+                                       VNC secreen sharing facilities of your KVM instances.
+                                       This will even work when KVM is running
+                                       inside a zone.
+                                     </p>
 
                                 </div>
                             </div>
