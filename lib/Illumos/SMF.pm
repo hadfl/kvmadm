@@ -98,8 +98,6 @@ sub fmriState {
     my $fmri = shift;
     my $opts = shift;
 
-    $self->fmriExists($fmri, $opts) or die "ERROR: FMRI '$fmri' does not exist\n";
-
     my @cmd = ($SVCS, $opts->{zonename} ? ('-z', $opts->{zonename}) : (), qw(-H -o state), $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};

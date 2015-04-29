@@ -17,6 +17,8 @@ use Illumos::Zones;
 
 my $FMRI        = KVMadm::Config->fmri();
 my $RUN_PATH    = KVMadm::Config->runPath();
+my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
+my $RCV_TMO     = 3;
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
 my $kvmConfig;
 
@@ -162,6 +164,28 @@ sub main {
             my $kvmName = shift @ARGV;
 
             print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
+            last;
+        };
+        /^state$/ && do {
+            my $kvmName = shift @ARGV;
+
+            my $config = $kvmConfig->listKVM($kvmName);
+            my $smf  = Illumos::SMF->new();
+            my $zone = Illumos::Zones->new();
+
+            for my $kvmName (keys %$config) {
+                my $smfState = '';
+
+                if ($config->{$kvmName}->{zone}) {
+                    $smfState = $zone->zoneState($kvmName) eq 'running'
+                        ? $smf->fmriState("$FMRI:$kvmName", { zonename => $kvmName })
+                        : 'offline';
+                }
+                else {
+                    $smfState = $smf->fmriState("$FMRI:$kvmName");
+                }
+                print $smfState . (' ' x (15 - length($smfState))) . $kvmName . "\n";
+            }
             last;
         };
         /^start$/ && do {
@@ -327,7 +351,7 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
-    status [kvm_name]
+    state [kvm_name]
 
     start <kvm_name>
 
@@ -432,6 +456,10 @@ function for details.
 
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
+
+=head2 B<state>
+
+prints the state of the KVM instance(s)
 
 =head2 B<start>
 
