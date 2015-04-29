@@ -1,3 +1,45 @@
+commit c719fcb4ebcb64468405aafa2e55331cd74e6c26
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 13:04:19 2015 +0200
+
+    - remove kvmcli
+
+commit f33801870d11ed55d04fe20ca9addd070919a9f2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 12:34:48 2015 +0200
+
+    - remove kvmcli
+
+commit a93c853ef78ccc6e358c5bdbf91ef3c1877078ce
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 12:14:15 2015 +0200
+
+    - state option added
+
+commit 48a55c821ee9d6ee55bb8bcdf1f0f9841e910a0f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 11:35:42 2015 +0200
+
+    - start, stop, restart pod
+
+commit 759e964da1d6d7f7cdb8027bb90baf73c0b61368
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 11:08:56 2015 +0200
+
+    - merge kvmcli -> kvmadm; adding start, stop, restart option
+
+commit 6c1ff41ba8bd73ce193bedb390214880c08d84bb
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Apr 28 22:21:02 2015 +0200
+
+    - cleanup
+
+commit cb9ce0dadacbdb4295802b739553f1ed3d6f6936
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Apr 28 14:24:05 2015 +0200
+
+    ready for 0.9.0-rc1
+
 commit 09bf6065bbad7d7554097f5960cff86e3a5c9af3
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Apr 28 11:51:49 2015 +0200

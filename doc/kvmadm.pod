@@ -18,7 +18,21 @@ where 'command' is one of the following:
 
     list [kvm_name]
 
+    state [kvm_name]
+
+    start <kvm_name>
+
+    stop <kvm_name>
+
+    restart <kvm_name>
+
     show-cmd <kvm_name>
+
+    info <kvm_name> [type,...]
+
+    monitor <kvm_name>
+
+    vnc <[bind_addr:]port> <kvm_name> 
 
     help
 
@@ -110,9 +124,53 @@ function for details.
 lists the available KVM instances with their properties. Lists details for B<kvm_name>
 is given.
 
+=head2 B<state>
+
+prints the state of the KVM instance(s)
+
+=head2 B<start>
+
+starts the KVM instance B<kvm_name>
+
+=head2 B<stop>
+
+stops the KVM instance B<kvm_name>
+
+=head2 B<restart>
+
+restarts the KVM instance B<kvm_name>
+
 =head2 B<show-cmd>
 
 prints the KVM invocation command for debug purpose
+
+=head2 B<info>
+
+queries information about the running KVM instance from qemu monitor.
+
+type can be one of the following:
+
+     all
+     block
+     blockstats
+     chardev
+     cpus
+     kvm
+     network
+     pci
+     registers
+     qtree
+     usb
+     version
+     vnc
+
+=head2 B<monitor>
+
+connects to the qemu monitor of the running KVM instance
+
+=head2 B<vnc>
+
+forwards the vnc socket to IP
 
 =head1 EXAMPLES
 
@@ -155,6 +213,18 @@ adding readonly zone access to a vnc password file
             }
         ]
     }
+
+query the attached block devices of a KVM instance with the name 'test-kvm'
+
+    kvmcli info test-kvm block
+
+connect to the qemu monitor of the KVM instance with the name 'test-kvm'
+
+    kvmcli monitor test-kvm
+
+forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
+
+    kvmcli vnc 5900 test-kvm
 
 =head1 COPYRIGHT
 

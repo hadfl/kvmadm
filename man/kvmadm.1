@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2015-04-28" "0.9.0-rc1" "kvmadm"
+.TH KVMADM 1 "2015-04-29" "0.9.0-rc2" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -148,7 +148,21 @@ where 'command' is one of the following:
 \&
 \&    list [kvm_name]
 \&
+\&    state [kvm_name]
+\&
+\&    start <kvm_name>
+\&
+\&    stop <kvm_name>
+\&
+\&    restart <kvm_name>
+\&
 \&    show\-cmd <kvm_name>
+\&
+\&    info <kvm_name> [type,...]
+\&
+\&    monitor <kvm_name>
+\&
+\&    vnc <[bind_addr:]port> <kvm_name> 
 \&
 \&    help
 \&
@@ -242,9 +256,48 @@ function for details.
 .IX Subsection "list"
 lists the available \s-1KVM\s0 instances with their properties. Lists details for \fBkvm_name\fR
 is given.
+.SS "\fBstate\fP"
+.IX Subsection "state"
+prints the state of the \s-1KVM\s0 instance(s)
+.SS "\fBstart\fP"
+.IX Subsection "start"
+starts the \s-1KVM\s0 instance \fBkvm_name\fR
+.SS "\fBstop\fP"
+.IX Subsection "stop"
+stops the \s-1KVM\s0 instance \fBkvm_name\fR
+.SS "\fBrestart\fP"
+.IX Subsection "restart"
+restarts the \s-1KVM\s0 instance \fBkvm_name\fR
 .SS "\fBshow-cmd\fP"
 .IX Subsection "show-cmd"
 prints the \s-1KVM\s0 invocation command for debug purpose
+.SS "\fBinfo\fP"
+.IX Subsection "info"
+queries information about the running \s-1KVM\s0 instance from qemu monitor.
+.PP
+type can be one of the following:
+.PP
+.Vb 10
+\&     all
+\&     block
+\&     blockstats
+\&     chardev
+\&     cpus
+\&     kvm
+\&     network
+\&     pci
+\&     registers
+\&     qtree
+\&     usb
+\&     version
+\&     vnc
+.Ve
+.SS "\fBmonitor\fP"
+.IX Subsection "monitor"
+connects to the qemu monitor of the running \s-1KVM\s0 instance
+.SS "\fBvnc\fP"
+.IX Subsection "vnc"
+forwards the vnc socket to \s-1IP\s0
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 create a \s-1KVM\s0 instance with the name 'test\-kvm'
@@ -297,6 +350,24 @@ adding readonly zone access to a vnc password file
 \&            }
 \&        ]
 \&    }
+.Ve
+.PP
+query the attached block devices of a \s-1KVM\s0 instance with the name 'test\-kvm'
+.PP
+.Vb 1
+\&    kvmcli info test\-kvm block
+.Ve
+.PP
+connect to the qemu monitor of the \s-1KVM\s0 instance with the name 'test\-kvm'
+.PP
+.Vb 1
+\&    kvmcli monitor test\-kvm
+.Ve
+.PP
+forward the vnc socket of the \s-1KVM\s0 instance with the name 'test\-kvm' to the \s-1TCP\s0 port 5900
+.PP
+.Vb 1
+\&    kvmcli vnc 5900 test\-kvm
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
