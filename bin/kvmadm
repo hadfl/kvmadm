@@ -17,8 +17,6 @@ use Illumos::Zones;
 
 my $FMRI        = KVMadm::Config->fmri();
 my $RUN_PATH    = KVMadm::Config->runPath();
-my @MON_INFO    = qw(block blockstats chardev cpus kvm network pci registers qtree usb version vnc);
-my $RCV_TMO     = 3;
 my %delPurgeMap = map { $_ => 1 } qw(vnic zvol);
 my $kvmConfig;
 
