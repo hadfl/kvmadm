@@ -80,10 +80,10 @@
                                     <p>KVMadm sets up individual SMF
                                     instances for each virtual machine. You
                                     can now check, start and stop your vms like any
-                                    other service with svcs and svcadm.
-                                    All the features that SMF provides like notifications
-                                    and restarting in case of a failure will apply to
-                                    your KVM.
+                                    other service with svcs and svcadm.</p>
+                                    <p>Leaveraging SMF brings a host of SMF
+                                    goodness to the operation of KVMs, like notifications
+                                    and restarting in case of a failure.                                    your KVM.
                                     </p>
 
                                 </div>
@@ -119,14 +119,17 @@
                                 <div class="caption">
                                     <h3>Monitoring</h3>
 
-                                    <p>KVMadm comes with features to easily
-                                       provide access to the monitoring and
-                                       VNC secreen sharing facilities of your KVM instances.
-                                       This will even work when KVM is running
-                                       inside a zone.
-                                     </p>
-
-                                </div>
+                                    <p>KVMadm makes it easy to access both
+                                    VNC and the KVM monitoring facility in a
+                                    secure way. The built-in domain socket
+                                    to tcp socket proxy allows you to access
+                                    these facilities in a farely secure way.
+                                    </p>
+                                    <p>Monitoring from the Global Zone works even when running
+                                    KVMs in zones as the unix
+                                    domain sockets are created in a cross-mounted
+                                    directory.</p>
+                                 </div>
                             </div>
                         </div>
                     </div>

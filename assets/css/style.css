@@ -96,7 +96,7 @@ h2 > a:not([href]) {
 
 @media (min-width: 992px) {
     .thumbnail.feature {
-        min-height: 400px;
+        min-height: 500px;
     }
 }
 
