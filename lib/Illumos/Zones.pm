@@ -121,7 +121,7 @@ my $SCHEMA = {
     'max-shm-memory'    => {
         optional    => 1,
         description => 'the maximum amount of shared memory allowed',
-        validator   => $regexp->(qr/^\d+[KMGT]?$/, 'max-shm-memory not valid'),
+        validator   => $regexp->(qr/^\d+[KMGT]?$/i, 'max-shm-memory not valid'),
     },
     'scheduling-class'  => {
         optional    => 1,
@@ -169,17 +169,17 @@ my $SCHEMA = {
             physical    => {
                 optional    => 1,
                 description => 'limits of physical memory. can be suffixed by (K, M, G, T)',
-                validator   => $regexp->(qr/^\d+[KMGT]?$/, 'physical capped-memory is not valid. check man zonecfg'),
+                validator   => $regexp->(qr/^\d+[KMGT]?$/i, 'physical capped-memory is not valid. check man zonecfg'),
             },
             swap    => {
                 optional    => 1,
                 description => 'limits of swap memory. can be suffixed by (K, M, G, T)',
-                validator   => $regexp->(qr/^\d+[KMGT]?$/, 'swap capped-memory is not valid. check man zonecfg'),
+                validator   => $regexp->(qr/^\d+[KMGT]?$/i, 'swap capped-memory is not valid. check man zonecfg'),
             },
             locked    => {
                 optional    => 1,
                 description => 'limits of locked memory. can be suffixed by (K, M, G, T)',
-                validator   => $regexp->(qr/^\d+[KMGT]?$/, 'locked capped-memory is not valid. check man zonecfg'),
+                validator   => $regexp->(qr/^\d+[KMGT]?$/i, 'locked capped-memory is not valid. check man zonecfg'),
             },
         },
     },
