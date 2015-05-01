@@ -19,6 +19,12 @@ sub new {
     return bless $self, $class
 }
 
+sub monInfo {
+    my $self = shift;
+
+    return [ @MON_INFO ];
+}
+
 sub queryMonitor {
     my $self  = shift;
     my $sock  = shift;

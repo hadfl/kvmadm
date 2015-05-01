@@ -261,9 +261,10 @@ sub main {
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
                 zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
 
-            my @types = !$types || $types eq 'all' ? @MON_INFO : split /,/, $types;
+            my $monInfo = $mon->monInfo;
+            my @types = !$types || $types eq 'all' ? @$monInfo : split /,/, $types;
             for my $type (@types){
-                grep { $_ eq $type } @MON_INFO
+                grep { $_ eq $type } @$monInfo
                     or die "ERROR: don't know type '$type'\n";
                 
                 print "QEMU INFO $type:\n";
