@@ -899,7 +899,7 @@ install-exec-hook:
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
 
 install-data-hook:
-	test "$(SVCIMPORT)" = "yes" && svccfg import $(pkgdatadir)/smf/system-kvm.xml
+	test "$(SVCIMPORT)" = "yes" && svccfg import $(pkgdatadir)/smf/system-kvm.xml || true
 
 dist-hook: $(POD) $(MAN) CHANGES
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
