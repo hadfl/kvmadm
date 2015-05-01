@@ -1,3 +1,33 @@
+commit b49b1ebf680079c7730f4a93e889bb53053a9522
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri May 1 09:43:24 2015 +0200
+
+    - fix missing @MON_INFO
+
+commit 5cc481d363ea83f3581a3a2d8c1d4587d9240739
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 23:31:36 2015 +0200
+
+    - fix libdir for symlinks
+
+commit c7bf559b4d6cc1f25516d87d76f11448f33db01e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 14:37:54 2015 +0200
+
+    - suffixes are case insensitive
+
+commit 9d9e84783ad4cfaba6db263678c1324d9fa00bed
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 14:01:58 2015 +0200
+
+    - remove kvmcli pod and man
+
+commit 9b74aeb7410ffd98d02184dfe3023a431d57e4da
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Apr 29 13:49:50 2015 +0200
+
+    ready for 0.9.0-rc2
+
 commit c719fcb4ebcb64468405aafa2e55331cd74e6c26
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Wed Apr 29 13:04:19 2015 +0200
