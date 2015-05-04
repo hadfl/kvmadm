@@ -34,6 +34,11 @@ h2 > a:not([href]) {
     padding-bottom: 5ex;    
 }
 
+.thumbnail .caption {
+    font-size: 110%;
+}
+
+
 #oposs-logo {
     position: absolute;
     top: -6ex;
@@ -88,13 +93,8 @@ h2 > a:not([href]) {
    text-shadow: 0px 0px 10px #66FF00;   
 }
 
-@media (min-width: 750px) {
-    .thumbnail.feature {
-        min-height: 200px;
-    }
-}
 
-@media (min-width: 992px) {
+@media (min-width: 750px) {
     .thumbnail.feature {
         min-height: 500px;
     }
@@ -113,6 +113,7 @@ h2 > a:not([href]) {
          font-size: 500%;
     }
 }
+
 
 .thumbnail.feature h3 {
     color: #fff;
