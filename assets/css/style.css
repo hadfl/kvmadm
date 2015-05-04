@@ -82,12 +82,12 @@ h2 > a:not([href]) {
 
 .thumbnail.feature {
     border-radius: 0px;
-    background-color: #2C4F66;
+    background-color: #053B70;
     color: #fff;
 }
 
 .thumbnail.feature:hover, .thumbnail.feature:active {   
-   background-color: #386583;
+   background-color: #054F98;
 }
 
 .thumbnail.feature:hover .icon, .thumbnail.feature:active .icon {
