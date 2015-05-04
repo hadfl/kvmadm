@@ -456,10 +456,16 @@ sub removeKVM {
     my $self    = shift;
     my $kvmName = shift;
     my $opts    = shift;
-    my $zPath   = shift;
 
     my $config = $self->readConfig($kvmName);
     my $util   = KVMadm::Utils->new();
+
+    my $zoneState = $self->{zone}->zoneState($kvmName);
+    # don't purge zone if KVM was not set up in zone
+    exists $config->{zone} || delete $opts->{zone};
+
+    exists $opts->{zone} && $zoneState eq 'running'
+        and die "ERROR: zone '$kvmName' still running. use 'kvmadm stop $kvmName' to stop it first...\n";
 
     for (keys %$opts){
         /^vnic$/ && do {
@@ -470,9 +476,15 @@ sub removeKVM {
             $util->purgeZvol($config);
             next;
         };
+        /^zone$/ && do {
+            $zoneState ne 'configured' && $self->{zone}->uninstallZone($kvmName);
+            $self->{zone}->deleteZone($kvmName);
+            next;
+        };
     }
 
-    $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZpath->($zPath));
+    # no need to delete the FMRI if zone has been purged
+    $opts->{zone} || $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZpath->($config->{zone}->{zonepath}));
 }
 
 sub checkConfig {
