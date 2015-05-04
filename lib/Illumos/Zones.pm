@@ -287,6 +287,7 @@ my $SCHEMA = {
     },
 };
 
+# private methods
 my $RESOURCES = sub {
     return [ map { $SCHEMA->{$_}->{members} ? $_ : () } keys %$SCHEMA ];
 };
@@ -301,7 +302,18 @@ my $resIsArray = sub {
 my $RESARRAYS = sub {
     return [ map { $SCHEMA->{$_}->{array} ? $_ : () } @{$RESOURCES->()} ];
 };
-    
+
+my $zoneCmd = sub {
+    my $self     = shift;
+    my $zoneName = shift;
+    my $cmd      = shift;
+    my @opts     = @_;
+
+    my @cmd = ($ZONEADM, '-z', $zoneName, $cmd, @opts);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
+    system(@cmd) and die "ERROR: cannot $cmd zone $zoneName\n";
+};
 
 # constructor
 sub new {
@@ -371,13 +383,9 @@ sub zoneState {
 }
 
 sub boot {
-    my $self     = shift;
-    my $zoneName = shift;
+    my $self = shift;
 
-    my @cmd = ($ZONEADM, '-z', $zoneName, 'boot');
-
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    system(@cmd) and die "ERROR: cannot boot zone $zoneName\n";
+    $self->$zoneCmd(shift, 'boot');
 }
 
 sub shutdown {
@@ -385,10 +393,7 @@ sub shutdown {
     my $zoneName = shift;
     my @reboot   = $_[0] ? qw(-r) : ();
 
-    my @cmd = ($ZONEADM, '-z', $zoneName, 'shutdown', @reboot);
-
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    system(@cmd) and die "ERROR: cannot shutdown zone $zoneName\n";
+    $self->$zoneCmd($zoneName, 'shutdown', @reboot);
 }
 
 sub reboot {
@@ -412,14 +417,26 @@ sub createZone {
     system(@cmd) and die "ERROR: cannot create zone $zoneName\n";
 }
 
-sub installZone {
+sub deleteZone {
     my $self     = shift;
     my $zoneName = shift;
 
-    my @cmd = ($ZONEADM, '-z', $zoneName, 'install');
+    my @cmd = ($ZONECFG, '-z', $zoneName, 'delete');
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    system(@cmd) and die "ERROR: cannot install zone $zoneName\n";
+    system(@cmd) and die "ERROR: cannot delete zone $zoneName\n";
+}
+
+sub installZone {
+    my $self = shift;
+
+    $self->$zoneCmd(shift, 'install');
+}
+
+sub uninstallZone {
+    my $self = shift;
+
+    $self->$zoneCmd(shift, 'uninstall');
 }
 
 sub zoneExists {
