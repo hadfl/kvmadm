@@ -1,3 +1,15 @@
+commit 9567e46ca430061580db40359c47ac2e5c9ef846
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon May 4 14:13:41 2015 +0200
+
+    - delete --purge option now supports zone cleanup
+
+commit 1d0d4936f4ac9ca44e6c7780865bd955c0f3c6e6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 1 17:47:28 2015 +0200
+
+    make this work without smf
+
 commit d321f30c658a0030099d46157f4e4f400b69ba71
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Fri May 1 17:23:24 2015 +0200

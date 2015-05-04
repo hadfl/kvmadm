@@ -12,7 +12,7 @@ where 'command' is one of the following:
 
     import <filename>
 
-    delete [--purge=vnic,zvol] <kvm_name>
+    delete [--purge=vnic,zvol,zone] <kvm_name>
 
     edit <kvm_name>
 
@@ -111,8 +111,8 @@ imports a KVM configuration from a file.
 
 =head2 B<delete>
 
-deletes the KVM instance with the name B<kvm_name>. Note: zvols and vnics will
-B<not> be deleted.
+deletes the KVM instance with the name B<kvm_name>. Note: zvols, vnics
+and zones will B<not> be deleted by default. use the B<--purge> option.
 
 =head2 B<edit>
 
