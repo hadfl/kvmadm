@@ -23,7 +23,9 @@ h2 > a:not([href]) {
 /* our stuff */
 
 #banner {
-    background-image: url(../images/IMG_0172.jpg);
+/*    background-image: url(../images/IMG_0172.jpg); */
+    background-image: url(../images/256A6555.jpg); 
+
     background-position: center;
     background-size: cover;
     color: #fff;
