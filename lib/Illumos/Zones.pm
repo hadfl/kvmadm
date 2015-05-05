@@ -374,11 +374,21 @@ sub listZones {
     return $zoneList;
 }
 
-sub zoneState {
+sub listZone {
     my $self     = shift;
     my $zoneName = shift;
 
     my ($zone) = grep { $_->{zonename} eq $zoneName } @{$self->listZones};
+
+    return $zone;
+}
+
+sub zoneState {
+    my $self     = shift;
+    my $zoneName = shift;
+
+    my $zone = $self->listZone($zoneName);
+
     return $zone ? $zone->{state} : undef;
 }
 

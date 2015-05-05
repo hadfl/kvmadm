@@ -7,11 +7,19 @@ use warnings;
 my $SVCS   = '/usr/bin/svcs';
 my $SVCCFG = '/usr/sbin/svccfg';
 my $SVCADM = '/usr/sbin/svcadm';
+my $ZLOGIN = '/usr/sbin/zlogin';
 
 # constructor
 sub new {
     my $class = shift;
     my $self = { @_ };
+
+    # add Illumos::Zone instance if zone support is required
+    $self->{zonesupport} && do {
+        require Illumos::Zones;
+        $self->{zone} = Illumos::Zones->new();
+    };
+    
     return bless $self, $class
 }
 # private methods
@@ -26,17 +34,41 @@ my $svcAdm = sub {
     system(@cmd) and die "ERROR: cannot $cmd '$fmri'\n";
 };
 
+my $zoneCmd = sub {
+    my $self     = shift;
+    my $zoneName = shift;
+
+    print STDERR "WARNING: zonename specified but 'zonesupport' not enabled for Illumos::SMF\n"
+        . "use 'Illumos::SMF(zonesupport => 1)' to enable zone support\n" if $zoneName && !$self->{zone};
+
+    return { cmd => [] } if !$zoneName || !$self->{zone};
+
+    my $zone = $self->{zone}->listZone($zoneName);
+    if ($zone && $zone->{state} eq 'running') {
+        return { cmd => [ $ZLOGIN, $zoneName ] };
+    }
+    else {
+        return { cmd => [], zpath => $zone->{zonepath} };
+    }
+
+    # just in case, should never reach here...
+    return { cmd => [] };
+};
+
 # public methods
 sub refreshFMRI {
     my $self = shift;
     my $fmri = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
-    my @cmd = ($SVCCFG, '-s', $fmri, 'refresh');
+    push @cmd, ($SVCCFG, '-s', $fmri, 'refresh');
 
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot refresh FMRI '$fmri'\n";
     
     return 1;
@@ -48,25 +80,27 @@ sub listFMRI {
     my $opts = $_[0] // {};
     my @fmris;
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
     
     $fmri ||= '*';
    
     # remove leading 'svc:/'
     $fmri =~ s/^svc:\///;
 
-    my @cmd = ($SVCCFG, 'list', $fmri);
+    my @cmd1 = (@cmd, $SVCCFG, 'list', $fmri);
 
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
-    open my $fmris, '-|', @cmd
+    print STDERR '# ' . join(' ', @cmd1) . "\n" if $self->{debug};
+    open my $fmris, '-|', @cmd1
         or die "ERROR: cannot get list of FMRI\n";
 
     while (my $elem = <$fmris>) {
         chomp $elem;
         push @fmris, "svc:/$elem" if !$opts->{instancesonly};
         
-        my @cmd2 = ($SVCCFG, '-s', $elem, 'list');
+        my @cmd2 = (@cmd, $SVCCFG, '-s', $elem, 'list');
 
         open my $instances, '-|', @cmd2
             or die "ERROR: cannot get instances of '$elem'\n";
@@ -140,13 +174,15 @@ sub addFMRI {
     my $fmri = shift;
     my $opts = $_[0] // {};
 
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
     # remove leading 'svc:/'
     $fmri =~ s/^svc:\///;
 
-    my @cmd = ($SVCCFG, 'add', $fmri);
+    push @cmd, ($SVCCFG, 'add', $fmri);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add '$fmri'\n";
@@ -157,10 +193,12 @@ sub deleteFMRI {
     my $fmri = shift;
     my $opts = $_[0] // {};
 
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
-    my @cmd = ($SVCCFG, 'delete', $fmri);
+    push @cmd, ($SVCCFG, 'delete', $fmri);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot delete $fmri\n";
 }
@@ -171,10 +209,12 @@ sub addInstance {
     my $instance = shift;
     my $opts = $_[0] // {};
 
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
-    my @cmd = ($SVCCFG, '-s', $fmri, 'add', $instance);
+    push @cmd, ($SVCCFG, '-s', $fmri, 'add', $instance);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add instance '$instance' to $fmri\n";
 
@@ -189,11 +229,13 @@ sub getPropertyGroups {
     my $fmri = shift;
     my $opts = $_[0] // {};
 
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
     my $pg = [];
-    my @cmd = ($SVCCFG, '-s', $fmri, 'listpg');
+    push @cmd, ($SVCCFG, '-s', $fmri, 'listpg');
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $props, '-|', @cmd
@@ -236,15 +278,17 @@ sub addPropertyGroup {
     my $type = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
     
     # set type to application if not specified
     $type //= 'application';
 
     return if $self->propertyGroupExists($fmri, $pg, $opts);
 
-    my @cmd = ($SVCCFG, '-s', $fmri, 'addpg', $pg, $type);
+    push @cmd, ($SVCCFG, '-s', $fmri, 'addpg', $pg, $type);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add property group to $fmri\n";
 }
@@ -255,10 +299,12 @@ sub deletePropertyGroup {
     my $pg   = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
         
-    my @cmd = ($SVCCFG, '-s', $fmri, 'delpg', $pg);
+    push @cmd, ($SVCCFG, '-s', $fmri, 'delpg', $pg);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot delete property group from $fmri\n";
 }
@@ -271,8 +317,10 @@ sub setProperty {
     my $type  = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
     # guess property type if not provided
     $type || do {
@@ -291,7 +339,7 @@ sub setProperty {
         }
     };
 
-    my @cmd = $self->propertyExists($fmri, $property, $opts) ?
+    push @cmd, $self->propertyExists($fmri, $property, $opts) ?
         ($SVCCFG, '-s', $fmri, 'setprop', $property, '=', "\"$value\"")
         : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:", "\"$value\"");
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
@@ -315,12 +363,14 @@ sub getProperties {
     my $pg   = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
     my $properties = {};
 
-    my @cmd = ($SVCCFG, '-s', $fmri, 'listprop', $pg);
+    push @cmd, ($SVCCFG, '-s', $fmri, 'listprop', $pg);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $props, '-|', @cmd
@@ -344,12 +394,14 @@ sub getSMFProperties {
     my $fmri = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
+    my $zcmd = $self->$zoneCmd($opts->{zonename});
+    my @cmd  = @{$zcmd->{cmd}};
+    local $ENV{SVCCFG_REPOSITORY} = $zcmd->{zpath}
+        . '/root/etc/svc/repository.db' if $zcmd->{zpath};
 
     my $properties = {};
 
-    my @cmd = ($SVCCFG, '-s', $fmri, 'listprop');
+    push @cmd, ($SVCCFG, '-s', $fmri, 'listprop');
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     open my $props, '-|', @cmd
@@ -380,9 +432,6 @@ sub setSMFProperties {
     my $properties = shift;
     my $opts = $_[0] // {};
     
-    local $ENV{SVCCFG_REPOSITORY} = $opts->{zonepath}
-        . '/root/etc/svc/repository.db' if $opts->{zonepath};
-
     $self->addFMRI($fmri, $opts) if !$self->fmriExists($fmri, $opts);
     # extract property groups
     my @pg = map { $properties->{$_}->{members} ? $_ : () } keys $properties;
