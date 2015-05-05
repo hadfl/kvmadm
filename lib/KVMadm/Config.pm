@@ -525,8 +525,8 @@ sub writeConfig {
     }
     else {
         my $zone = $self->{zone}->isGZ ? $self->{zone}->getZoneProperties($kvmName) : {};
-        $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZone->($kvmName, $zone))
-            if $zone->{zonename} && $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, $zone));
+        $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZone->($kvmName, %$zone))
+            if $zone->{zonename} && $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, %$zone));
     }
     # set up system/kvm SMF template
     $zConf && !$self->{smf}->fmriExists($FMRI, $insertZone->($kvmName, $zConf)) && do {
@@ -583,14 +583,14 @@ sub readConfig {
     my $properties = {};
     $config->{zone} = $zone if %$zone;
 
-    $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, $zone)) or do {
+    $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, %$zone)) or do {
        delete $config->{zone};
        $zone = {};
        $self->{smf}->fmriExists("$FMRI:$kvmName");
     } or die "ERROR: KVM instance '$kvmName' does not exist\n";
             
     $properties = $self->{smf}->getProperties("$FMRI:$kvmName", $PGRP,
-        $insertZone->($kvmName, $zone));
+        $insertZone->($kvmName, %$zone));
 
     my $sectRE = join '|', @{$SECTIONS->()};
 

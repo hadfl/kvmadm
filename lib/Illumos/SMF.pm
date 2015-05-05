@@ -38,6 +38,9 @@ my $zoneCmd = sub {
     my $self     = shift;
     my $zoneName = shift;
 
+    print STDERR "WARNING: zonename specified but 'zonesupport' not enabled for Illumos::SMF\n"
+        . "use 'Illumos::SMF(zonesupport => 1)' to enable zone support\n" if $zoneName && !$self->{zone};
+
     return { cmd => [] } if !$zoneName || !$self->{zone};
 
     my $zone = $self->{zone}->listZone($zoneName);
@@ -65,6 +68,7 @@ sub refreshFMRI {
 
     push @cmd, ($SVCCFG, '-s', $fmri, 'refresh');
 
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot refresh FMRI '$fmri'\n";
     
     return 1;
