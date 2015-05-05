@@ -3,8 +3,6 @@ package KVMadm::Utils;
 use strict;
 use warnings;
 
-use Illumos::SMF;
-
 my $FMRI     = 'svc:/system/kvm';
 my $ZFS      = '/usr/sbin/zfs';
 my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';

@@ -316,9 +316,10 @@ my $getMAC = sub {
     return $mac;
 };
 
-my $insertZpath = sub {
-    my $zpath = shift;
-    return $zpath ? { zonepath => $zpath } : {};
+my $insertZone = sub {
+    my $kvmName = shift;
+    my $zone    = shift;
+    return $zone ? { zonename => $kvmName } : {};
 };
 
 my $writeArray = sub {
@@ -326,13 +327,13 @@ my $writeArray = sub {
     my $kvmName = shift;
     my $prefix  = shift;
     my $array   = shift;
-    my $zPath   = shift;
+    my $zConf   = shift;
 
     my $counter = 0;
     for my $dev (@$array){
         $self->{prog}->progress;
         %$dev = map { "$PGRP/$prefix$counter" . '_' . $_ => $dev->{$_} } keys %$dev;
-        $self->{smf}->setProperties("$FMRI:$kvmName", $dev, $insertZpath->($zPath));
+        $self->{smf}->setProperties("$FMRI:$kvmName", $dev, $insertZone->($kvmName, $zConf));
         $counter++;
     }
 };
@@ -423,7 +424,7 @@ sub new {
     my $class = shift;
     my $self = { @_ };
 
-    $self->{smf}  = Illumos::SMF->new(debug => $self->{debug});
+    $self->{smf}  = Illumos::SMF->new(zonesupport => 1, debug => $self->{debug});
     $self->{zone} = Illumos::Zones->new(debug => $self->{debug});
     $self->{prog} = KVMadm::Progress->new();
     # remove zonename as that will be set to kvm name
@@ -484,7 +485,7 @@ sub removeKVM {
     }
 
     # no need to delete the FMRI if zone has been purged
-    $opts->{zone} || $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZpath->($config->{zone}->{zonepath}));
+    $opts->{zone} || $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZone->($kvmName, $config->{zone}));
 }
 
 sub checkConfig {
@@ -508,10 +509,9 @@ sub writeConfig {
     -d "$RUN_PATH/$kvmName" || make_path("$RUN_PATH/$kvmName", { mode => 0700 })
         or die "Cannot create directory $RUN_PATH/$kvmName\n";
 
-    my $zPath;
+    my $zConf = $config->{zone} ? 1 : 0;
     # set up zone
-    if ($config->{zone}) {
-        $zPath = $config->{zone}->{zonepath};
+    if ($zConf) {
         $config->{zone}->{zonename} = $kvmName;
 
         # remove SMF instance from GZ if it was setup there
@@ -525,50 +525,50 @@ sub writeConfig {
     }
     else {
         my $zone = $self->{zone}->isGZ ? $self->{zone}->getZoneProperties($kvmName) : {};
-        $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZpath->($zone->{zonepath}))
-            if $zone->{zonepath} && $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZpath->($zone->{zonepath}));
+        $self->{smf}->deleteFMRI("$FMRI:$kvmName", $insertZone->($kvmName, $zone))
+            if $zone->{zonename} && $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, $zone));
     }
     # set up system/kvm SMF template
-    $config->{zone} && !$self->{smf}->fmriExists($FMRI, $insertZpath->($zPath)) && do {
+    $zConf && !$self->{smf}->fmriExists($FMRI, $insertZone->($kvmName, $zConf)) && do {
         print "setting up system/kvm within zone. this might take a while...\n";
 
         my $smfTemplate = $self->{smf}->getSMFProperties($FMRI);
-        $self->{smf}->setSMFProperties($FMRI, $smfTemplate, $insertZpath->($zPath));
+        $self->{smf}->setSMFProperties($FMRI, $smfTemplate, $insertZone->($kvmName, $zConf));
         # delete manifestfile as this will cause system/svc/restarter to delete system/kvm since file not present in zone
-        $self->{smf}->deletePropertyGroup($FMRI, 'manifestfiles', $insertZpath->($zPath));
+        $self->{smf}->deletePropertyGroup($FMRI, 'manifestfiles', $insertZone->($kvmName, $zConf));
     };
 
-    $config->{zone} && print "setting up SMF instance within zone. this might take a while...\n";
+    $zConf && print "setting up SMF instance within zone. this might take a while...\n";
     $self->{prog}->init;
     $self->{prog}->progress;    
 
     #create instance if it does not exist
-    $self->{smf}->addInstance($FMRI, $kvmName, { %{$insertZpath->($zPath)}, enabled => $config->{zone} })
-        if !$self->{smf}->fmriExists("$FMRI:$kvmName", $insertZpath->($zPath));
+    $self->{smf}->addInstance($FMRI, $kvmName, { %{$insertZone->($kvmName, $zConf)}, enabled => $zConf })
+        if !$self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, $zConf));
 
     delete $config->{zone};
     
     $self->{prog}->progress;
     #delete property group to wipe off existing config
-    $self->{smf}->deletePropertyGroup("$FMRI:$kvmName", $PGRP, $insertZpath->($zPath))
-        if $self->{smf}->propertyGroupExists("$FMRI:$kvmName", $PGRP, $insertZpath->($zPath));
+    $self->{smf}->deletePropertyGroup("$FMRI:$kvmName", $PGRP, $insertZone->($kvmName, $zConf))
+        if $self->{smf}->propertyGroupExists("$FMRI:$kvmName", $PGRP, $insertZone->($kvmName, $zConf));
     $self->{prog}->progress;
-    $self->{smf}->addPropertyGroup("$FMRI:$kvmName", $PGRP, undef, $insertZpath->($zPath));
+    $self->{smf}->addPropertyGroup("$FMRI:$kvmName", $PGRP, undef, $insertZone->($kvmName, $zConf));
     $self->{prog}->progress;
-    $self->{smf}->refreshFMRI("$FMRI:$kvmName", $insertZpath->($zPath));
+    $self->{smf}->refreshFMRI("$FMRI:$kvmName", $insertZone->($kvmName, $zConf));
 
     # write section configs
     for my $section (@{$SECTIONS->()}) {
-        $self->$writeArray($kvmName, $section, $config->{$section}, $zPath);
+        $self->$writeArray($kvmName, $section, $config->{$section}, $config);
         delete $config->{$section};
     }
 
     #write general kvm config
     $config = { map { $PGRP . '/' . $_ => $config->{$_} } keys %$config };
     $self->{prog}->progress;
-    $self->{smf}->setProperties("$FMRI:$kvmName", $config, $insertZpath->($zPath));
+    $self->{smf}->setProperties("$FMRI:$kvmName", $config, $insertZone->($kvmName, $zConf));
 
-    $self->{smf}->refreshFMRI("$FMRI:$kvmName", $insertZpath->($zPath));
+    $self->{smf}->refreshFMRI("$FMRI:$kvmName", $insertZone->($kvmName, $zConf));
     $self->{prog}->done;
 
     return 1;
@@ -583,14 +583,14 @@ sub readConfig {
     my $properties = {};
     $config->{zone} = $zone if %$zone;
 
-    $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZpath->($zone->{zonepath})) or do {
+    $self->{smf}->fmriExists("$FMRI:$kvmName", $insertZone->($kvmName, $zone)) or do {
        delete $config->{zone};
        $zone = {};
        $self->{smf}->fmriExists("$FMRI:$kvmName");
     } or die "ERROR: KVM instance '$kvmName' does not exist\n";
             
     $properties = $self->{smf}->getProperties("$FMRI:$kvmName", $PGRP,
-        $insertZpath->($zone->{zonepath}));
+        $insertZone->($kvmName, $zone));
 
     my $sectRE = join '|', @{$SECTIONS->()};
 
@@ -633,8 +633,8 @@ sub listKVM {
     else {
         my $zones = $self->{zone}->listZones;
         for my $zone (@$zones) {
-            push @$fmris, @{$self->{smf}->listFMRI($FMRI, { zonepath => $zone->{zonename} ne 'global'
-                ? $zone->{zonepath} : undef, instancesonly => 1 })};
+            push @$fmris, @{$self->{smf}->listFMRI($FMRI, { zonename => $zone->{zonename} ne 'global'
+                ? $zone->{zonename} : undef, instancesonly => 1 })};
         }
     }
 

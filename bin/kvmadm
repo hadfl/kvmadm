@@ -107,7 +107,7 @@ sub main {
             $config->{uuid} = gen_uuid_v4();
 
             defined $kvmName or pod2usage(1);
-            my $smf = Illumos::SMF->new();
+            my $smf = Illumos::SMF->new(zonesupport => 1);
             $smf->fmriExists($FMRI . ':' . $kvmName)
                 && die "ERROR: instance '$kvmName' already exists. use 'edit' to change properties\n";
 
@@ -123,7 +123,7 @@ sub main {
             close $fh;
 
             my $config = JSON::PP->new->decode($configJSON);
-            my $smf = Illumos::SMF->new();
+            my $smf = Illumos::SMF->new(zonesupport => 1);
             for my $kvm (keys %$config){
                 $smf->fmriExists($FMRI . ':' . $kvm)
                     && die "ERROR: instance '$kvm' already exists. use 'edit' to change properties\n";
@@ -168,7 +168,7 @@ sub main {
             my $kvmName = shift @ARGV;
 
             my $config = $kvmConfig->listKVM($kvmName);
-            my $smf  = Illumos::SMF->new();
+            my $smf  = Illumos::SMF->new(zonesupport => 1);
             my $zone = Illumos::Zones->new();
 
             for my $kvmName (keys %$config) {
@@ -198,7 +198,7 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new();
+                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->enable("$FMRI:$kvmName");
             }
             last;
@@ -216,7 +216,7 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new();
+                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->disable("$FMRI:$kvmName");
             }
             last;
@@ -233,7 +233,7 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new();
+                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->restart("$FMRI:$kvmName");
             }
             last;
@@ -255,7 +255,7 @@ sub main {
             defined $kvmName or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new();
+            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
@@ -279,7 +279,7 @@ sub main {
             defined $kvmName or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new();
+            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
@@ -295,7 +295,7 @@ sub main {
             defined $kvmName && defined $vncPort or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new();
+            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
