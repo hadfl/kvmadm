@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2015-05-04" "0.9.0-rc4" "kvmadm"
+.TH KVMADM 1 "2015-05-05" "0.9.0-rc5" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -355,19 +355,19 @@ adding readonly zone access to a vnc password file
 query the attached block devices of a \s-1KVM\s0 instance with the name 'test\-kvm'
 .PP
 .Vb 1
-\&    kvmcli info test\-kvm block
+\&    kvmadm info test\-kvm block
 .Ve
 .PP
 connect to the qemu monitor of the \s-1KVM\s0 instance with the name 'test\-kvm'
 .PP
 .Vb 1
-\&    kvmcli monitor test\-kvm
+\&    kvmadm monitor test\-kvm
 .Ve
 .PP
 forward the vnc socket of the \s-1KVM\s0 instance with the name 'test\-kvm' to the \s-1TCP\s0 port 5900
 .PP
 .Vb 1
-\&    kvmcli vnc 5900 test\-kvm
+\&    kvmadm vnc 5900 test\-kvm
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"

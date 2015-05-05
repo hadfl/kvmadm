@@ -1,4 +1,4 @@
-kvmadm 0.9.0-rc4
+kvmadm 0.9.0-rc5
 ============
 Manage KVM instances under SMF control
 
@@ -17,10 +17,10 @@ Kvmadm uses only core perl, so it should install out of the box on any machine w
 It is advised to install kvmadm into a separate directory as the base directory of kvmadm will be mounted in the zones.
 
 ```sh
-wget https://github.com/hadfl/kvmadm/releases/download/v0.9.0-rc4/kvmadm-0.9.0-rc4.tar.gz
-tar zxvf kvmadm-0.9.0-rc4.tar.gz
-cd kvmadm-0.9.0-rc4
-./configure --prefix=/opt/kvmadm-0.9.0-rc4 
+wget https://github.com/hadfl/kvmadm/releases/download/v0.9.0-rc5/kvmadm-0.9.0-rc5.tar.gz
+tar zxvf kvmadm-0.9.0-rc5.tar.gz
+cd kvmadm-0.9.0-rc5
+./configure --prefix=/opt/kvmadm-0.9.0-rc5 
 ```
 
 Now you can run
@@ -44,4 +44,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2015-05-04
+2015-05-05

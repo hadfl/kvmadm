@@ -216,15 +216,15 @@ adding readonly zone access to a vnc password file
 
 query the attached block devices of a KVM instance with the name 'test-kvm'
 
-    kvmcli info test-kvm block
+    kvmadm info test-kvm block
 
 connect to the qemu monitor of the KVM instance with the name 'test-kvm'
 
-    kvmcli monitor test-kvm
+    kvmadm monitor test-kvm
 
 forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
 
-    kvmcli vnc 5900 test-kvm
+    kvmadm vnc 5900 test-kvm
 
 =head1 COPYRIGHT
 

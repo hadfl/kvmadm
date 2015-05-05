@@ -1,3 +1,27 @@
+commit ec31690135d6bd582ed1b2d6237f07da383491aa
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue May 5 14:43:40 2015 +0200
+
+    - print warning if SMF is used in zones but zonesupport is not enabled
+
+commit e15a5d525b1673051be02a87f597d9bf934f2d17
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue May 5 14:27:49 2015 +0200
+
+    - svccfg commands improved if zone is running
+
+commit 61b05eb6f9b9d31008e9feb6304ce0eb97fe81f7
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon May 4 14:37:09 2015 +0200
+
+    - remove kvmcli leftovers
+
+commit 69244a714a403d8037200534b47f6abc103d2528
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon May 4 14:32:10 2015 +0200
+
+    ready for 0.9.0-rc4
+
 commit 9567e46ca430061580db40359c47ac2e5c9ef846
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Mon May 4 14:13:41 2015 +0200
