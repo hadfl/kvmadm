@@ -532,8 +532,8 @@ sub writeConfig {
     $zConf && !$self->{smf}->fmriExists($FMRI, $insertZone->($kvmName, $zConf)) && do {
         print "setting up system/kvm within zone. this might take a while...\n";
 
-        my $smfTemplate = $self->{smf}->getSMFProperties($FMRI);
-        $self->{smf}->setSMFProperties($FMRI, $smfTemplate, $insertZone->($kvmName, $zConf));
+        my $smfTemplate = $self->{smf}->getFMRIProperties($FMRI);
+        $self->{smf}->setFMRIProperties($FMRI, $smfTemplate, $insertZone->($kvmName, $zConf));
         # delete manifestfile as this will cause system/svc/restarter to delete system/kvm since file not present in zone
         $self->{smf}->deletePropertyGroup($FMRI, 'manifestfiles', $insertZone->($kvmName, $zConf));
     };

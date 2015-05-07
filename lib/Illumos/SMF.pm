@@ -389,7 +389,7 @@ sub getProperties {
     return $properties;
 }
 
-sub getSMFProperties {
+sub getFMRIProperties {
     my $self = shift;
     my $fmri = shift;
     my $opts = $_[0] // {};
@@ -426,7 +426,7 @@ sub getSMFProperties {
     return $properties;
 }
 
-sub setSMFProperties {
+sub setFMRIProperties {
     my $self       = shift;
     my $fmri       = shift;
     my $properties = shift;
