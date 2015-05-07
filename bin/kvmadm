@@ -98,6 +98,7 @@ sub main {
     defined $mainOpt or pod2usage(1);
 
     $kvmConfig = KVMadm::Config->new();
+    my $smf    = Illumos::SMF->new(zonesupport => 1);
 
     for ($mainOpt){
         /^create$/ && do {
@@ -107,7 +108,6 @@ sub main {
             $config->{uuid} = gen_uuid_v4();
 
             defined $kvmName or pod2usage(1);
-            my $smf = Illumos::SMF->new(zonesupport => 1);
             $smf->fmriExists($FMRI . ':' . $kvmName)
                 && die "ERROR: instance '$kvmName' already exists. use 'edit' to change properties\n";
 
@@ -123,7 +123,6 @@ sub main {
             close $fh;
 
             my $config = JSON::PP->new->decode($configJSON);
-            my $smf = Illumos::SMF->new(zonesupport => 1);
             for my $kvm (keys %$config){
                 $smf->fmriExists($FMRI . ':' . $kvm)
                     && die "ERROR: instance '$kvm' already exists. use 'edit' to change properties\n";
@@ -168,7 +167,6 @@ sub main {
             my $kvmName = shift @ARGV;
 
             my $config = $kvmConfig->listKVM($kvmName);
-            my $smf  = Illumos::SMF->new(zonesupport => 1);
             my $zone = Illumos::Zones->new();
 
             for my $kvmName (keys %$config) {
@@ -198,7 +196,6 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->enable("$FMRI:$kvmName");
             }
             last;
@@ -216,7 +213,6 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->disable("$FMRI:$kvmName");
             }
             last;
@@ -233,7 +229,6 @@ sub main {
                 last;
             }
             else {
-                my $smf = Illumos::SMF->new(zonesupport => 1);
                 $smf->restart("$FMRI:$kvmName");
             }
             last;
@@ -250,12 +245,11 @@ sub main {
             last;
         };
         /^info$/ && do {
-            my $kvmName = shift @ARGV;
-            my $types = shift @ARGV;
+            my $kvmName = pop @ARGV;
+            my $types   = shift @ARGV;
             defined $kvmName or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
@@ -279,7 +273,6 @@ sub main {
             defined $kvmName or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
@@ -295,7 +288,6 @@ sub main {
             defined $kvmName && defined $vncPort or pod2usage(1);
 
             my $config = $kvmConfig->readConfig($kvmName);
-            my $smf = Illumos::SMF->new(zonesupport => 1);
             my $mon = KVMadm::Monitor->new();
 
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
@@ -360,7 +352,7 @@ where 'command' is one of the following:
 
     show-cmd <kvm_name>
 
-    info <kvm_name> [type,...]
+    info [type,...] <kvm_name>
 
     monitor <kvm_name>
 
@@ -527,7 +519,7 @@ copy a KVM instance
 basic zone setup
 
     "zone" : {
-        "zonepath" : "/zones/mykvm",
+        "zonepath" : "/zones/test-kvm",
         "brand"    : "lipkg",
         "ip-type"  : "exclusive"
     }
@@ -548,7 +540,7 @@ adding readonly zone access to a vnc password file
 
 query the attached block devices of a KVM instance with the name 'test-kvm'
 
-    kvmadm info test-kvm block
+    kvmadm info block test-kvm
 
 connect to the qemu monitor of the KVM instance with the name 'test-kvm'
 
