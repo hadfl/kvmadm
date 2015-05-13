@@ -9,7 +9,7 @@ perl:
 
 # disable dependency install
 install:
-- true
+  - true
 
 script:
   - ./configure --prefix=$HOME/kvmadm --disable-svcimport

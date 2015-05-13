@@ -3,6 +3,9 @@ package Illumos::Zones;
 use strict;
 use warnings;
 
+# version
+our $VERSION = '0.1.0';
+
 # commands
 my $ZONEADM  = '/usr/sbin/zoneadm';
 my $ZONECFG  = '/usr/sbin/zonecfg';
@@ -643,14 +646,14 @@ __END__
 
 =head1 NAME
 
-Illumos::Zones - Zone setup class
+Illumos::Zones - Zone administration class
 
 =head1 SYNOPSIS
 
-use Illumos::Zones;
-...
-my $zone = Illumos::Zones->new(debug=>0);
-...
+ use Illumos::Zones;
+ ...
+ my $zone = Illumos::Zones->new(debug => 0);
+ ...
 
 =head1 DESCRIPTION
 
@@ -663,6 +666,161 @@ class to manage Zones
 print debug information to STDERR
 
 =head1 METHODS
+
+=head2 schema
+
+returns a schema for "Data::Processor" so that the zone config can be
+validated before written to the zone.
+
+ my $schema = $zone->schema();
+
+=head2 template
+
+returns a minimal template config for creating a zone
+
+ my $cfg = $zone->template();
+
+=head2 resources
+
+returns a list of zone resources
+
+ my @res = @{$zone->resources()};
+
+=head2 resourceArrays
+
+returns a list of zone resources which are arrays (i.e. can have multiple entries)
+
+ my @resArray = @{$zone->resourceArrays()};
+
+=head2 zoneName
+
+static method. returns the name of the current zone
+
+ Illumos::Zones->zonename();
+
+=head2 isGZ
+
+static method. returns true if we are on the global zone
+
+ Illumos::Zones->isGZ();
+
+=head2 listZones
+
+returns the list of zones. each element contains a hash with all the zone infos
+(cf. 'zoneamd list')
+
+ my @zones = @{$zone->listZones()};
+
+=head2 listZone
+
+returns a hash with all the zone infos (cf. 'zoneadm list')
+
+ my %zone = %{$zone->listZone($zonename)};
+
+=head2 zoneState
+
+returns the state of the zone
+
+ $zone->zoneState($zonename);
+
+=head2 boot
+
+boots the zone
+ 
+ $zone->boot($zonename);
+
+=head2 shutdown
+
+gracefully shuts down the zone
+
+ $zone->shutdown($zonename);
+
+=head2 reboot
+
+reboots the zone
+
+ $zone->reboot($zonename);
+
+=head2 createZone
+
+creates a zone and applies the properties
+
+ $zone->createZone($zonename, { %props });
+
+=head2 deleteZone
+
+deletes a zone (zone must be uninstalled first)
+
+ $zone->deleteZone($zonename);
+
+=head2 installZone
+
+installs a zone
+
+ $zone->install($zonename);
+
+=head2 uninstallZone
+
+uninstalls a zone
+
+ $zone->uninstall($zonename);
+
+=head2 zoneExists
+
+checks whether a zone exists or not
+
+ $zone->zoneExists($zonename);
+
+=head2 getZoneProperties
+
+returns a JSON data structure which contains all the zone properties
+
+ my %zonecfg = %{$zone->getZoneProperties($zonename)};
+
+=head2 setZoneProperties
+
+applies the properties provided in a JSON data structure to the zone
+if the zone does not exist it will be created
+
+ $zone->setZoneProperties($zonename, { %zonecfg });
+
+=head2 resourceExists
+
+checks whether a resource exists or not. C<$property> and C<$value> are
+optional parameters
+
+ $zone->resourceExists($zonename, $resource, $property, $value);
+
+=head2 addResource
+
+adds a resource
+
+ $zone->addResource($zonename, $resource, { %props });
+
+=head2 delResource
+
+deletes a resource. C<$property> and C<$value> are optional parameters
+for distinction if multiple resources of the same type exists.
+
+ $zone->delResource($zonename, $resource, $property, $value);
+
+=head2 clearResources
+
+deletes all resrouces
+
+ $zone->clearResources($zonename);
+
+=head2 setProperty
+
+sets a property
+
+ $zone->setProperty($zonename, $property, $value);
+
+=head2 clearProperty
+
+sets a property to the default value
+
+ $zone->clearProperty($zonename, $property);
 
 =head1 COPYRIGHT
 
@@ -690,7 +848,6 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
-2015-04-28 had Zone support
-2015-04-10 had Initial Version
+2015-05-08 had Initial Version
 
 =cut

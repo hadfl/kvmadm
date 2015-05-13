@@ -10,6 +10,13 @@ systems with SMF support.  The kvm hosts run under smf control.  Each host
 will show up as a separate SMF service instance. Kvmadm supports KVM instances
 set-up as SMF service instance within individual zones.
 
+Upgrading from a pre 0.9.0 version
+----------------------------------
+
+It is recommended to shut down all KVM instances before upgrading. Run pathes changed (i.e. each
+instance gets its own subdirectory) to prevent inter-zone monitor access. 
+You will need to shut down your KVMs manually once if you upgrade from a pre 0.9.0 version while KVM instances are running.
+
 Setup
 -----
 

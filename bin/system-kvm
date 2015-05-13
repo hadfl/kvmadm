@@ -25,7 +25,6 @@ my %SMF_STATUS = (
 
 my $FMRI     = KVMadm::Config->fmri();
 my $RUN_PATH = KVMadm::Config->runPath();
-my $OLD_RUN  = '/var/run/kvm';
 my $ACPI_TO  = 120;
 
 my $sendMonitor = sub {
@@ -70,9 +69,7 @@ my $getPid = sub {
 
     my $pidFile;
 
-    open $pidFile, '<', "$RUN_PATH/$kvmName/$kvmName.pid"
-        or open $pidFile, '<', $OLD_RUN . '/' . $kvmName . '.pid' or do {
-
+    open $pidFile, '<', "$RUN_PATH/$kvmName/$kvmName.pid" or do {
         print "Cannot open pid file\n";
         exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
     };
