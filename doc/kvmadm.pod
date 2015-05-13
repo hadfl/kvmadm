@@ -28,7 +28,7 @@ where 'command' is one of the following:
 
     show-cmd <kvm_name>
 
-    info <kvm_name> [type,...]
+    info [type,...] <kvm_name>
 
     monitor <kvm_name>
 
@@ -195,7 +195,7 @@ copy a KVM instance
 basic zone setup
 
     "zone" : {
-        "zonepath" : "/zones/mykvm",
+        "zonepath" : "/zones/test-kvm",
         "brand"    : "lipkg",
         "ip-type"  : "exclusive"
     }
@@ -216,7 +216,7 @@ adding readonly zone access to a vnc password file
 
 query the attached block devices of a KVM instance with the name 'test-kvm'
 
-    kvmadm info test-kvm block
+    kvmadm info block test-kvm
 
 connect to the qemu monitor of the KVM instance with the name 'test-kvm'
 

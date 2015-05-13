@@ -1,3 +1,27 @@
+commit 4e2d7baace26a24f2eb89086a0020a4ab8527891
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri May 8 13:22:10 2015 +0200
+
+    - update pod
+
+commit 4f44264988e9434b128ffe57326e576a6c92c8d4
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu May 7 14:09:31 2015 +0200
+
+    - make it ready for Illumos::SMF cpan module
+
+commit 03a5cf0b3c97c18e8e727831cc57be61374a53c5
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu May 7 10:21:59 2015 +0200
+
+    - a bit of clenaup
+
+commit 6359f8a184c213d98796abf49a323e184deda4fd
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue May 5 15:36:14 2015 +0200
+
+    ready for 0.9.0-rc5
+
 commit ec31690135d6bd582ed1b2d6237f07da383491aa
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue May 5 14:43:40 2015 +0200
