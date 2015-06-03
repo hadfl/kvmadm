@@ -300,7 +300,7 @@ sub purgeVnic {
     my $self = shift;
     my $config = shift;
 
-    for my $nic (@{$config->{nics}}){
+    for my $nic (@{$config->{nic}}){
         my @cmd = ($DLADM, qw(delete-vnic), $nic->{nic_name});
         system(@cmd) && die "ERROR: cannot delete vnic '$nic->{nic_name}'\n";
     }
@@ -310,7 +310,7 @@ sub purgeZvol {
     my $self = shift;
     my $config = shift;
 
-    for my $zvol (@{$config->{disks}}){
+    for my $zvol (@{$config->{disk}}){
         #do not remove cdrom images
         next if $zvol->{media} && $zvol->{media} eq 'cdrom';
 
