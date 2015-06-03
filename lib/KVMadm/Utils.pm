@@ -240,7 +240,7 @@ sub vnc {
         $cfg->{zone} && do {
             print STDERR "\nWARNING: you are going to use VNC bound to $ip:$port within a zone.\n"
                        . "           you have to manually add a vnic to the zone and set it up properly within the zone.\n"
-                       . "           to avoid this, use \"vnc\" : \"socket\" in your configuration and 'kvmcli vnc' to forward it to IP.\n\n"; 
+                       . "           to avoid this, use \"vnc\" : \"socket\" in your configuration and 'kvmadm vnc' to forward it to IP.\n\n"; 
 
             return undef;
         };
