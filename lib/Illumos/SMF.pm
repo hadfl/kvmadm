@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # version
-our $VERSION = '0.1.1';
+our $VERSION = '0.1.2';
 
 # commands
 my $SVCS   = '/usr/bin/svcs';
@@ -48,14 +48,14 @@ my $zoneCmd = sub {
 
     my $zone = $self->{zone}->listZone($zoneName);
     if ($zone && $zone->{state} eq 'running') {
-        return { cmd => [ $ZLOGIN, $zoneName ] };
+        return { cmd => [ $ZLOGIN, $zoneName ], shellquote => q{'"'} };
     }
     else {
-        return { cmd => [], zpath => $zone->{zonepath} };
+        return { cmd => [], zpath => $zone->{zonepath}, shellquote => q{"} };
     }
 
     # just in case, should never reach here...
-    return { cmd => [] };
+    return { cmd => [], shellquote => q{"} };
 };
 
 # public methods
@@ -343,8 +343,10 @@ sub setProperty {
     };
 
     push @cmd, $self->propertyExists($fmri, $property, $opts) ?
-        ($SVCCFG, '-s', $fmri, 'setprop', $property, '=', "\"$value\"")
-        : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:", "\"$value\"");
+        ($SVCCFG, '-s', $fmri, 'setprop', $property, '=',
+            $zcmd->{shellquote} . $value . $zcmd->{shellquote})
+        : ($SVCCFG, '-s', $fmri, 'addpropvalue', $property, "$type:",
+            $zcmd->{shellquote} . $value . $zcmd->{shellquote});
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot set property $property of $fmri\n";
 }
