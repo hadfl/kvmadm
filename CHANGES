@@ -1,3 +1,33 @@
+commit caa53851d67674d47cb2351642487db70de45584
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Sep 25 11:06:31 2015 +0200
+
+    - more time to start/stop kvm
+
+commit 7f15d221d1ab80c01fc61ac8229aadb6e767fa10
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Jun 3 16:16:27 2015 +0200
+
+    - one more kvmcli leftover...
+
+commit 41a9ac0c8c8d60d64bbe218610b636d198eb81ea
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Jun 3 16:00:39 2015 +0200
+
+    - purge fix for zvols and vnics
+
+commit 9869d9e94231a45ee7b76aab72a0368e6a0c7e02
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri May 22 21:39:01 2015 +0200
+
+    - more time to start kvm
+
+commit 19979bf2e1a569a0764c9e2cba0e2d24021b676c
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed May 13 13:10:09 2015 +0200
+
+    ready for 0.9.0
+
 commit 4e2d7baace26a24f2eb89086a0020a4ab8527891
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri May 8 13:22:10 2015 +0200
