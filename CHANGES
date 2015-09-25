@@ -1,3 +1,15 @@
+commit b5547c531fb05dcb5e86d6ecd0f64172ef3eb3e5
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Sep 25 12:14:00 2015 +0200
+
+    - shell quote fix when using zlogin
+
+commit 1b1a2e1778c45b44c8b86ac46b8e494f190834b2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Sep 25 11:10:12 2015 +0200
+
+    ready for 0.9.1
+
 commit caa53851d67674d47cb2351642487db70de45584
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Sep 25 11:06:31 2015 +0200
