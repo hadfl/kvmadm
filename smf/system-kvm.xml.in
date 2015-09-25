@@ -30,17 +30,17 @@
             name='start'
             type='method'
             exec='@actual_exec_prefix@/bin/system-kvm start'
-            timeout_seconds='180'/>
+            timeout_seconds='300'/>
         <exec_method
             name='stop'
             type='method'
             exec='@actual_exec_prefix@/bin/system-kvm stop'
-            timeout_seconds='180'/>
+            timeout_seconds='300'/>
         <exec_method
             name='refresh'
             type='method'
             exec=':true'
-            timeout_seconds='180'/>
+            timeout_seconds='300'/>
 
         <stability value='Unstable'/>
         <template>
