@@ -13,7 +13,7 @@ use Data::Processor;
 use Data::Dumper;
 
 use FindBin;
-my ($BASEDIR)   = dirname($FindBin::Bin);
+my ($BASEDIR)   = dirname($FindBin::RealBin);
 
 # constants/programs
 my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
