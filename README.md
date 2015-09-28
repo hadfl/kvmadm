@@ -1,4 +1,4 @@
-kvmadm 0.9.2
+kvmadm 0.9.3
 ============
 Manage KVM instances under SMF control
 
@@ -10,12 +10,12 @@ systems with SMF support.  The kvm hosts run under smf control.  Each host
 will show up as a separate SMF service instance. Kvmadm supports KVM instances
 set-up as SMF service instance within individual zones.
 
-Upgrading from a pre 0.9 version
+Upgrading from a pre 0.9.x version
 ----------------------------------
 
 It is recommended to shut down all KVM instances before upgrading. Run pathes changed (i.e. each
 instance gets its own subdirectory) to prevent inter-zone monitor access. 
-You will need to shut down your KVMs manually once if you upgrade from a pre 0.9 version while KVM instances are running.
+You will need to shut down your KVMs manually once if you upgrade from a pre 0.9.x version while KVM instances are running.
 
 Setup
 -----
@@ -24,10 +24,10 @@ Kvmadm uses only core perl, so it should install out of the box on any machine w
 It is advised to install kvmadm into a separate directory as the base directory of kvmadm will be mounted in the zones.
 
 ```sh
-wget https://github.com/hadfl/kvmadm/releases/download/v0.9.2/kvmadm-0.9.2.tar.gz
-tar zxvf kvmadm-0.9.2.tar.gz
-cd kvmadm-0.9.2
-./configure --prefix=/opt/kvmadm-0.9.2 
+wget https://github.com/hadfl/kvmadm/releases/download/v0.9.3/kvmadm-0.9.3.tar.gz
+tar zxvf kvmadm-0.9.3.tar.gz
+cd kvmadm-0.9.3
+./configure --prefix=/opt/kvmadm-0.9.3 
 ```
 
 Now you can run
@@ -51,4 +51,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2015-09-25
+2015-09-28
