@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # version
-our $VERSION = '0.1.2';
+our $VERSION = '0.1.3';
 
 # commands
 my $SVCS   = '/usr/bin/svcs';
@@ -44,7 +44,7 @@ my $zoneCmd = sub {
     print STDERR "WARNING: zonename specified but 'zonesupport' not enabled for Illumos::SMF\n"
         . "use 'Illumos::SMF(zonesupport => 1)' to enable zone support\n" if $zoneName && !$self->{zone};
 
-    return { cmd => [] } if !$zoneName || !$self->{zone};
+    return { cmd => [], shellquote => q{"} } if !$zoneName || !$self->{zone};
 
     my $zone = $self->{zone}->listZone($zoneName);
     if ($zone && $zone->{state} eq 'running') {
@@ -221,10 +221,10 @@ sub addInstance {
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->{debug};
     system(@cmd) and die "ERROR: cannot add instance '$instance' to $fmri\n";
 
-    $self->addPropertyGroup("$fmri:$instance", 'general', 'framework');
-    $self->setProperty("$fmri:$instance", 'general/complete', $instance);
+    $self->addPropertyGroup("$fmri:$instance", 'general', 'framework', $opts);
+    $self->setProperty("$fmri:$instance", 'general/complete', $instance, undef, $opts);
     $self->setProperty("$fmri:$instance", 'general/enabled',
-        $opts->{enabled} ? 'true' : 'false');
+        $opts->{enabled} ? 'true' : 'false', undef, $opts);
 }
 
 sub getPropertyGroups {
