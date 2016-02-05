@@ -788,7 +788,8 @@ sub getPid {
     open my $fh, '<', $pidfile or return undef;
     chomp (my $pid = <$fh>);
     close $fh;
-    return $pid;
+
+    return int($pid);
 }
 
 1;

@@ -183,7 +183,7 @@ sub main {
                 # check if we are in the pre start command
                 $smfState eq 'online' && $config->{$kvmName}->{pre_start_cmd} && do {
                     my $pid = $kvmConfig->getPid($kvmName);
-                    $smfState = 'prestart' if !$pid || !kill (0, $pid);
+                    $smfState = 'offline*' if !$pid || !kill (0, $pid);
                 };
                 print $smfState . (' ' x (15 - length($smfState))) . $kvmName . "\n";
             }
