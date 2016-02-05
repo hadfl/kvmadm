@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Net::Ping;
+
+# usage: ping_probe.pl <host> [add wait time]
+
+$#ARGV >= 0 or die "usage: ping_probe.pl <host> [add wait time]\n";
+
+my $ping = Net::Ping->new("icmp") or die "ERROR: cannot create insance of Net::Ping\n";
+while (1) {
+    last if $ping->ping($ARGV[0]);
+}
+$ping->close;
+
+sleep $ARGV[1] if $ARGV[1];
+
+1;
+
