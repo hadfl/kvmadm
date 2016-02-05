@@ -180,6 +180,11 @@ sub main {
                 else {
                     $smfState = $smf->fmriState("$FMRI:$kvmName");
                 }
+                # check if we are in the pre start command
+                $smfState eq 'online' && $config->{$kvmName}->{pre_start_cmd} && do {
+                    my $pid = $kvmConfig->getPid($kvmName);
+                    $smfState = 'prestart' if !$pid || !kill (0, $pid);
+                };
                 print $smfState . (' ' x (15 - length($smfState))) . $kvmName . "\n";
             }
             last;
@@ -388,6 +393,7 @@ for the KVM instance the following properties can be set:
      shutdown
      cleanup
      qemu_extra_opts
+     pre_start_cmd
 
 for each disk the following properties can be set:
 
@@ -515,6 +521,10 @@ copy a KVM instance
     kvmadm list test-kvm > test-kvm.json
 
     kvmadm import test-kvm.json
+
+wait 5 minutes before starting the qemu process
+
+    "pre_start_cmd" : "/usr/bin/sleep 300"
 
 basic zone setup
 

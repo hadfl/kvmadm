@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # version
-our $VERSION = '0.1.3';
+our $VERSION = '0.1.6';
 
 # commands
 my $SVCS   = '/usr/bin/svcs';
@@ -19,7 +19,13 @@ sub new {
 
     # add Illumos::Zone instance if zone support is required
     $self->{zonesupport} && do {
-        require Illumos::Zones;
+        eval {
+            require Illumos::Zones;
+        };
+        if ($@) {
+            die "ERROR: Unable to load package Illumos::Zones.";
+        }
+
         $self->{zone} = Illumos::Zones->new(debug => $self->{debug});
     };
     
@@ -402,7 +408,7 @@ sub setFMRIProperties {
     
     $self->addFMRI($fmri, $opts) if !$self->fmriExists($fmri, $opts);
     # extract property groups
-    my @pg = map { $properties->{$_}->{members} ? $_ : () } keys $properties;
+    my @pg = map { $properties->{$_}->{members} ? $_ : () } keys %$properties;
 
     for my $pg (@pg) {
         $self->addPropertyGroup($fmri, $pg, $properties->{$pg}->{type}, $opts);

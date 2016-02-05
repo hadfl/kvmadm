@@ -3,12 +3,15 @@ package KVMadm::Utils;
 use strict;
 use warnings;
 
+use Text::ParseWords qw(shellwords);
+
 my $FMRI     = 'svc:/system/kvm';
 my $ZFS      = '/usr/sbin/zfs';
 my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
 my $IFCONFIG = '/usr/sbin/ifconfig';
 my $ISAINFO  = '/usr/bin/isainfo';
+my $TEST     = '/usr/bin/test';
 
 my %vcpuOptions = (
     sockets => undef,
@@ -49,6 +52,17 @@ sub file {
     return sub {
         my $file = shift;
         return open (my $fh, $op, $file) ? undef : "$msg $file: $!";
+    }
+}
+
+sub cmd {
+    my $self = shift;
+    my $msg  = shift;
+
+    return sub {
+        my $cmd = shift;
+        my @cmd = ($TEST, '-x', (shellwords($cmd))[0]);
+        return !system (@cmd) ? undef : "$msg $cmd: $!";
     }
 }
 

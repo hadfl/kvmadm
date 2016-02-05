@@ -292,6 +292,12 @@ my $SCHEMA = sub {
         description => 'zone config for the KVM',
         members => $zone->schema(),
     },
+    pre_start_cmd => {
+        optional    => 1,
+        description => 'command to run before starting qemu',
+        example     => '/usr/bin/sleep 300',
+        validator   => $sv->cmd('cannot execute'),
+    },
     }
 };
 
@@ -756,10 +762,33 @@ sub getVNCPassword {
 
     open my $fh, '<', $config->{vnc_pw_file}
         or die 'ERROR: cannot open vnc password file ' . $config->{vnc_pw_file} . ": $!\n";
-    chomp(my $password = do { local $/; <$fh>; });
+    chomp (my $password = do { local $/; <$fh>; });
     close $fh;
 
     return $password;
+}
+
+sub getPreStartCmd {
+    my $self = shift;
+    my $kvmName = shift;
+
+    my $config = $self->readConfig($kvmName);
+    $self->checkConfig($config);
+
+    return $config->{pre_start_cmd};
+}
+
+sub getPid {
+    my $self = shift;
+    my $kvmName = shift;
+
+    my $pidfile = "$RUN_PATH/$kvmName/$kvmName.pid";
+
+    return undef if !-f $pidfile;
+    open my $fh, '<', $pidfile or return undef;
+    chomp (my $pid = <$fh>);
+    close $fh;
+    return $pid;
 }
 
 1;
@@ -821,6 +850,14 @@ returns the shutdown mechanism for a KVM instance. defaults to 'acpi'
 
 returns the VNC password
 
+=head2 getPreStartCmd
+
+return the pre_start_cmd
+
+=head2 getPid
+
+returns the pid of the qemu process
+
 =head1 COPYRIGHT
 
 Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
@@ -847,6 +884,7 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
+2016-02-05 had pre start cmd added
 2015-04-28 had Zone support
 2014-10-03 had Initial Version
 
