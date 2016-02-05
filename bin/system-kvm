@@ -64,21 +64,6 @@ my $cleanupRunPath = sub {
     }
 };
 
-my $getPid = sub {
-    my $kvmName = shift;
-
-    my $pidFile;
-
-    open $pidFile, '<', "$RUN_PATH/$kvmName/$kvmName.pid" or do {
-        print "Cannot open pid file\n";
-        exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
-    };
-    chomp (my $pid = <$pidFile>);
-    close $pidFile;
-
-    return $pid;
-};
-
 # check if FMRI is set
 $ENV{SMF_FMRI} || do {
     print "SMF framework variables are not initialised.\n";
@@ -98,19 +83,32 @@ for (shift){
         my $config = KVMadm::Config->new();
         my @cmdArray;
         my $password;
+        my $precmd;
 
         local $@;
         eval {
             local $SIG{__DIE__};
             @cmdArray = @{$config->getKVMCmdArray($kvmName)};
             $password = $config->getVNCPassword($kvmName);
+            $precmd   = $config->getPreStartCmd($kvmName);
         };
         if ($@){
             print "$@\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
 
-        system(@cmdArray) && do {
+        # check if we have to run a pre start cmd
+        $precmd && do {
+            # fork into the bg so SMF won't time out
+            defined (my $pid = fork) or die "ERROR: can't fork: $!\n";
+            # terminate parent process
+            $pid && exit $SMF_STATUS{SMF_EXIT_OK};
+
+            # clean up existing pid file for qemu process check
+            unlink "$RUN_PATH/$kvmName/$kvmName.pid";
+            system ($precmd);
+        };
+        system (@cmdArray) && do {
             print "Cannot run KVM $kvmName\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
         };
@@ -133,7 +131,10 @@ for (shift){
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
         
-        my $pid = $getPid->($kvmName);
+        my $pid = $config->getPid->($kvmName) or do {
+            print "Cannot get pid.\n";
+            exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
+        };
         for ($shutdownType){
             /^acpi$/ && do {
                 $acpiShutdown->($kvmName);

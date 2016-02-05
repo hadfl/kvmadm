@@ -180,6 +180,11 @@ sub main {
                 else {
                     $smfState = $smf->fmriState("$FMRI:$kvmName");
                 }
+                # check if we are in the pre start command
+                $smfState eq 'online' && $config->{pre_start_cmd} && do {
+                    my $pid = $config->getPid($kvmName);
+                    $smfState = 'prestart' if !$pid || !kill (0, $pid);
+                };
                 print $smfState . (' ' x (15 - length($smfState))) . $kvmName . "\n";
             }
             last;
