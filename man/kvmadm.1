@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "KVMADM 1"
-.TH KVMADM 1 "2015-05-13" "0.9.3" "kvmadm"
+.TH KVMADM 1 "2016-02-05" "0.10.0" "kvmadm"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -194,6 +194,7 @@ for the \s-1KVM\s0 instance the following properties can be set:
 \&     shutdown
 \&     cleanup
 \&     qemu_extra_opts
+\&     pre_start_cmd
 .Ve
 .PP
 for each disk the following properties can be set:
@@ -324,6 +325,12 @@ copy a \s-1KVM\s0 instance
 \&    kvmadm list test\-kvm > test\-kvm.json
 \&
 \&    kvmadm import test\-kvm.json
+.Ve
+.PP
+wait 5 minutes before starting the qemu process
+.PP
+.Vb 1
+\&    "pre_start_cmd" : "/usr/bin/sleep 300"
 .Ve
 .PP
 basic zone setup
