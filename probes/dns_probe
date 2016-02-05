@@ -1,0 +1,22 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $DIG     = '/usr/sbin/dig';
+my $OFFLINE = qr/connection timed out;/;
+
+# usage: dns_probe.pl <host> [add wait time]
+
+$#ARGV >= 0 or die "usage: dns_probe.pl <host> [add wait time]\n";
+
+my @cmd = ($DIG, "\@$ARGV[0]", $ARGV[0], '+short');
+while (1) {
+    open my $dig, '-|', @cmd or die "ERROR: cannot execute dig.\n";
+    last if !grep { /$OFFLINE/ } (<$dig>);
+}
+
+sleep $ARGV[1] if $ARGV[1];
+
+1;
+
