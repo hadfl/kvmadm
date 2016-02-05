@@ -24,6 +24,8 @@ BIN = bin/@PACKAGE@ bin/system-kvm
 
 PM :=  $(shell find lib/ -name "*.pm")
 
+PROBES :=  $(shell find probes/ -name "*_probe")
+
 MAN = man/kvmadm.1
 POD = doc/kvmadm.pod
 
@@ -33,7 +35,7 @@ EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS $(PM) $(GENERAT
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
-dist_bin_SCRIPTS = $(BIN)
+dist_bin_SCRIPTS = $(BIN) $(PROBES)
 
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
