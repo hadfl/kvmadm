@@ -1,3 +1,21 @@
+commit eec3effb1ec09650c061ae90d58ddfbe24bdd103
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Feb 5 23:24:40 2016 +0100
+
+    updated installer to install probes into bin directory
+
+commit 44cf746c44447bc4e178a968e111bdbff95dad14
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat Feb 6 15:04:03 2016 +0100
+
+    - bugfix getPid
+
+commit c540788370c4704756dc59726571c007b4eb5748
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Feb 5 18:27:02 2016 +0100
+
+    - cleanup
+
 commit 894773f4d93cbc73f9777cfdd2e79ecd6e865a28
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Feb 5 16:31:57 2016 +0100
