@@ -1,3 +1,15 @@
+commit 894773f4d93cbc73f9777cfdd2e79ecd6e865a28
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Feb 5 16:31:57 2016 +0100
+
+    - example probes for pre_start_cmd added
+
+commit 9f918a70ce129e9fc801662b357ab7ef36e5fe4d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Feb 5 15:22:09 2016 +0100
+
+    ready for 0.10.0
+
 commit 349078a241760edd27f6d19894a48ef70d97c512
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri Feb 5 15:05:58 2016 +0100
