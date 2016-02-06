@@ -131,7 +131,7 @@ for (shift){
             exit $SMF_STATUS{SMF_EXIT_ERR_CONFIG};
         }
         
-        my $pid = $config->getPid->($kvmName) or do {
+        my $pid = $config->getPid($kvmName) or do {
             print "Cannot get pid.\n";
             exit $SMF_STATUS{SMF_EXIT_ERR_FATAL};
         };
