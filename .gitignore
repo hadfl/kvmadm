@@ -19,6 +19,9 @@ autom4te.cache/
 aclocal.m4
 config.log
 config.status
-thirdparty/
+thirdparty/*
+!thirdparty/Makefile.am
+!thirdparty/Makefile.in
 *.tar.gz
+README
 smf/system-kvm.xml

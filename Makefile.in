@@ -15,21 +15,8 @@
 
 @SET_MAKE@
 
-# Copyright (C) 2014 Tobias Oetiker
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# Author: Tobi Oetiker <tobi@oetiker.ch>
+# License: Public Domain
 
 
 VPATH = @srcdir@
@@ -67,7 +54,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 subdir = .
-DIST_COMMON = $(am__configure_deps) $(dist_bin_SCRIPTS) \
+DIST_COMMON = README $(am__configure_deps) $(dist_bin_SCRIPTS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/configure $(top_srcdir)/smf/system-kvm.xml.in \
 	AUTHORS conftools/install-sh conftools/missing
@@ -188,12 +175,14 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+CURL = @CURL@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 GMAKE = @GMAKE@
+GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -204,6 +193,7 @@ LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MISSING_PERL_MODULES = @MISSING_PERL_MODULES@
 MKDIR_P = @MKDIR_P@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -214,28 +204,33 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
+PERL5LIB = @PERL5LIB@
 POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SVCIMPORT = @SVCIMPORT@
+SVCINSTALLDIR = @SVCINSTALLDIR@
+URL_CAT = @URL_CAT@
 VERSION = @VERSION@
+WGET = @WGET@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 actual_exec_prefix = @actual_exec_prefix@
 actual_mandir = @actual_mandir@
+actual_prefix = @actual_prefix@
 am__leading_dot = @am__leading_dot@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
 builddir = @builddir@
-datadir = @datadir@
+datadir = $(prefix)
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+enable_pkgonly = @enable_pkgonly@
 exec_prefix = @exec_prefix@
 host_alias = @host_alias@
 htmldir = @htmldir@
@@ -263,21 +258,24 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 SUFFIXES = .1 .man .pm
-SUBDIRS = lib
+SUBDIRS = thirdparty lib
 BIN = bin/@PACKAGE@ bin/system-kvm
 PM := $(shell find lib/ -name "*.pm")
 PROBES := $(shell find probes/ -name "*_probe")
-MAN = man/kvmadm.1
-POD = doc/kvmadm.pod
+MAN = man/@PACKAGE@.1
+POD = doc/@PACKAGE@.pod
+THIRDPARTY_DIR := $(shell pwd)/thirdparty
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS $(PM) $(GENERATED_EXTRADIST)
+EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(BIN) $(PM) \
+	$(GENERATED_EXTRADIST) smf/system-kvm.xml.in
+
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
-dist_bin_SCRIPTS = $(BIN) $(PROBES)
+@ENABLE_SVCINSTALL_TRUE@svcdir = @SVCINSTALLDIR@
+@ENABLE_SVCINSTALL_TRUE@svc_DATA = smf/system-kvm.xml
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
-svcdir = $(pkgdatadir)/smf
-svc_DATA = smf/system-kvm.xml
+dist_bin_SCRIPTS = $(BIN) $(PROBES)
 all: all-recursive
 
 .SUFFIXES:
@@ -781,8 +779,7 @@ info: info-recursive
 info-am:
 
 install-data-am: install-imanDATA install-svcDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+
 install-dvi: install-dvi-recursive
 
 install-dvi-am:
@@ -832,8 +829,7 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	uninstall-svcDATA
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) ctags-recursive \
-	install-am install-data-am install-exec-am install-strip \
-	tags-recursive
+	install-am install-exec-am install-strip tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-generic \
@@ -842,39 +838,46 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	dist-zip distcheck distclean distclean-generic distclean-tags \
 	distcleancheck distdir distuninstallcheck dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-data-hook install-dist_binSCRIPTS \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-exec-hook install-html install-html-am \
-	install-imanDATA install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-svcDATA installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-dist_binSCRIPTS uninstall-imanDATA uninstall-svcDATA
+	install-data-am install-dist_binSCRIPTS install-dvi \
+	install-dvi-am install-exec install-exec-am install-exec-hook \
+	install-html install-html-am install-imanDATA install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-svcDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-dist_binSCRIPTS \
+	uninstall-imanDATA uninstall-svcDATA
 
 
-doc/%.pod: bin/% configure
+CHANGES:
+	git log --full-history --simplify-merges --dense --no-merges > CHANGES
+
+README.md COPYRIGHT: VERSION
+	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/[0-4]\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
+
+README: README.md
+	cp README.md README
+
+doc/%.pod: bin/% VERSION
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
 
-man/%.1: bin/% configure
+man/%.1: bin/% VERSION
 	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
 
-README.md COPYRIGHT: configure
-	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/[0-4]\.\d+\.\d+(?:-\w+)?/$(PACKAGE_VERSION)/g'  $@
-
-CHANGES: configure
-	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
+dist-hook: $(POD)  $(MAN) CHANGES
+	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README.md $(distdir)/COPYRIGHT
+	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:
+	[ "$(PERL5LIB)" = "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^use .*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	mkdir -p $(DESTDIR)$(libdir)
+	[ ! -d $(THIRDPARTY_DIR)/lib/perl5 ] || cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
 
-install-data-hook:
-	test "$(SVCIMPORT)" = "yes" && svccfg import $(pkgdatadir)/smf/system-kvm.xml || true
-
-dist-hook: $(POD) $(MAN) CHANGES
-	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
-	$(GMAKE) $(MAN)
+test:
+	$(PERL) -Ithirdparty/lib/perl5 "-MExtUtils::Command::MM" "-e" "test_harness(0, 'lib','thirdparty/lib/perl5')" t/*.t
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

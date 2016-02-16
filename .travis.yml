@@ -12,5 +12,6 @@ install:
   - true
 
 script:
-  - ./configure --prefix=$HOME/kvmadm --disable-svcimport
+  - ./bootstrap.sh
+  - ./configure --prefix=$HOME/kvmadm
   - make install
