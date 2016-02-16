@@ -9,7 +9,7 @@ use warnings;
 
 use Pod::Usage;
 use File::Temp qw(tempfile);
-use JSON::PP;
+use JSON;
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use KVMadm::Config;
 use KVMadm::Monitor;
@@ -61,7 +61,7 @@ sub editConfig {
 sub writeConfig {
     my $kvmName = shift;
     my $config = shift;
-    my $configJSON = JSON::PP->new->pretty->encode($config);
+    my $configJSON = JSON->new->pretty->encode($config);
 
     my $configValid = 0;
 
@@ -71,7 +71,7 @@ sub writeConfig {
             local $SIG{__DIE__};
 
             (my $modified, $configJSON) = editConfig($configJSON);
-            $config = JSON::PP->new->decode($configJSON);
+            $config = JSON->new->decode($configJSON);
 
             return if !$modified;
 
@@ -123,7 +123,7 @@ sub main {
             my $configJSON = do { local $/; <$fh>; };
             close $fh;
 
-            my $config = JSON::PP->new->decode($configJSON);
+            my $config = JSON->new->decode($configJSON);
             for my $kvm (keys %$config){
                 $smf->fmriExists($FMRI . ':' . $kvm)
                     && die "ERROR: instance '$kvm' already exists. use 'edit' to change properties\n";
@@ -161,7 +161,7 @@ sub main {
         /^list$/ && do {
             my $kvmName = shift @ARGV;
 
-            print JSON::PP->new->pretty->encode($kvmConfig->listKVM($kvmName));
+            print JSON->new->pretty->encode($kvmConfig->listKVM($kvmName));
             last;
         };
         /^state$/ && do {
