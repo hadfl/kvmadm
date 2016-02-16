@@ -1,3 +1,21 @@
+commit c8d29d1b7eecdab79a8b5f1108ab001527100ddd
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Feb 16 15:49:53 2016 +0100
+
+    - use JSON instead of JSON::PP
+
+commit 01750570fb84df9905a45985974f00908001f0de
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Feb 16 16:11:02 2016 +0100
+
+    - add perl 5.20
+
+commit f85a1855372f3153b4c1af6d83b43ac0c65fdcb4
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Feb 16 12:44:43 2016 +0100
+
+    ready for 0.10.2
+
 commit ae897b6ef59c356d70eeb94ef850ef96c521f2f2
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Feb 16 12:30:39 2016 +0100
