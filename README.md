@@ -33,6 +33,7 @@ cd kvmadm-0.10.3
 Now you can run
 
 ```sh
+make
 make install
 ```
 
