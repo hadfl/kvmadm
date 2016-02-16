@@ -1,4 +1,4 @@
-kvmadm 0.10.1
+kvmadm 0.10.2
 ============
 Manage KVM instances under SMF control
 
@@ -24,10 +24,10 @@ Kvmadm uses only core perl, so it should install out of the box on any machine w
 It is advised to install kvmadm into a separate directory as the base directory of kvmadm will be mounted in the zones.
 
 ```sh
-wget https://github.com/hadfl/kvmadm/releases/download/v0.10.1/kvmadm-0.10.1.tar.gz
-tar zxvf kvmadm-0.10.1.tar.gz
-cd kvmadm-0.10.1
-./configure --prefix=/opt/kvmadm-0.10.1 
+wget https://github.com/hadfl/kvmadm/releases/download/v0.10.2/kvmadm-0.10.2.tar.gz
+tar zxvf kvmadm-0.10.2.tar.gz
+cd kvmadm-0.10.2
+./configure --prefix=/opt/kvmadm-0.10.2 
 ```
 
 Now you can run
@@ -36,9 +36,17 @@ Now you can run
 make install
 ```
 
-By default this will also install the kvmadm smf manifest in
-```/var/svc/manifest/site``` you can disable this behavior by calling
-configure with ```--disable-svcimport``` 
+You can import make configure install a kvmadm
+service manifest by calling configure with the option
+```--enable-svcinstall=/var/svc/manifest/site```. Since the manifest
+contains the absolute path to the kvmadm install directory, it is not
+contained in the prebuilt version. But you can get a copy from github and
+roll your own.
+
+```sh
+svccfg validate /var/svc/manifest/site/system-kvm.xml
+svccfg import /var/svc/manifest/site/system-kvm.xml
+```
 
 Check the [man page](doc/kvmadm.pod) for information about how to use kvmadm.
 
@@ -51,4 +59,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2016-02-06
+2016-02-16
