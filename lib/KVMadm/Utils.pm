@@ -110,13 +110,36 @@ sub diskPath {
             $path =~ s|^/dev/zvol/rdsk/||;
 
             -e "/dev/zvol/rdsk/$path" || do {
-                my @cmd = ($ZFS, qw(create -p -V), ($disk->{disk_size} // '10G'),
-                    $path);
+                my @cmd = ($ZFS, qw(create -p),
+                    ($disk->{block_size} ? ('-o', "volblocksize=$disk->{block_size}") : ()),
+                    '-V', ($disk->{disk_size} // '10G'), $path);
 
                 print STDERR "-> zvol $path does not exist. creating it...\n";
                 system(@cmd) && die "ERROR: cannot create zvol '$path'\n";
             };
         }
+        return undef;
+    }
+}
+
+sub blockSize {
+    my $self = shift;
+
+    return sub {
+        my $blkSize = shift;
+
+        my ($val, $suf) = $blkSize =~ /^(\d+)(k?)$/i
+            or die "ERROR: block_size '$blkSize' not valid\n";
+
+        $val *= 1024 if $suf;
+
+        $val >= 512
+            or die "ERROR: block_size '$blkSize' not valid. Must be greater or equal than 512.\n";
+        $val <= 128 * 1024
+            or die "ERROR: block_size '$blkSize' not valid. Must be less or equal than 128k.\n";
+        ($val & ($val - 1))
+            and die "ERROR: block_size '$blkSize' not valid. Must be a power of 2.\n";
+
         return undef;
     }
 }
