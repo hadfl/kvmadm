@@ -1,3 +1,27 @@
+commit abba6417912afc65c363b9d8147784f217115ca8
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri May 6 13:37:45 2016 +0200
+
+    - warn if block_size is changed after creation
+
+commit 5407a103b934d380355f0c3d6537f03910e32099
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue May 3 16:26:41 2016 +0200
+
+    - block_size property implemented
+
+commit e79032a7b90721a45827a77276c31e7032802c4a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Feb 16 20:48:26 2016 +0100
+
+    - need make to build dependencies
+
+commit 1a017074695b09d2fae5319e2e43d95ae7340616
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Feb 16 16:17:32 2016 +0100
+
+    ready for 0.10.3
+
 commit c8d29d1b7eecdab79a8b5f1108ab001527100ddd
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Feb 16 15:49:53 2016 +0100
