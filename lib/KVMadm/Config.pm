@@ -208,6 +208,12 @@ my $SCHEMA = sub {
                 example     => '"disk_size" : "10G"',
                 validator   => $sv->regexp(qr/^\d+[bkmgtp]$/i),
             },
+            block_size  => {
+                optional    => 1,
+                description => 'zvol block size',
+                example     => '"block_size" : "128k"',
+                validator   => $sv->blockSize(),
+            },
             cache   => {
                 optional    => 1,
                 description => 'disk cache. can be "none", "writeback" or  "writethrough"',
