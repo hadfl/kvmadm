@@ -43,6 +43,15 @@ my $alphanumeric = sub {
     return shift =~ /^[-\w]+$/;
 };
 
+my $calcBlkSize = sub {
+    my $blkSize = shift;
+    
+    my ($val, $suf) = $blkSize =~ /^(\d+)(k?)$/i
+        or return undef;
+    
+    return $suf ? $val * 1024 : $val;
+};
+
 # public methods
 sub file {
     my $self = shift;
@@ -109,14 +118,29 @@ sub diskPath {
         else{
             $path =~ s|^/dev/zvol/rdsk/||;
 
-            -e "/dev/zvol/rdsk/$path" || do {
+            if (-e "/dev/zvol/rdsk/$path") {
+                return undef if !$disk->{block_size};
+
+                my @cmd = ($ZFS, qw(get -H -o value volblocksize), $path);    
+                open my $blks, '-|', @cmd or die "ERROR: cannot get volblocksize property of '$path'\n";
+                chomp (my $blkSize = <$blks>);
+        
+                $calcBlkSize->($blkSize) != $calcBlkSize->($disk->{block_size}) && do {
+                    # reset volblocksize and warn
+                    $disk->{block_size} = $blkSize;
+                    print STDERR "WARNING: volblocksize property of '$path' cannot be changed after creation!\n"
+                               . "If you want to change the block_size property create a new zvol manually\n"
+                               . "and 'dd' the old zvol contents to the new.\n\n";
+                };
+            }
+            else {
                 my @cmd = ($ZFS, qw(create -p),
                     ($disk->{block_size} ? ('-o', "volblocksize=$disk->{block_size}") : ()),
                     '-V', ($disk->{disk_size} // '10G'), $path);
 
                 print STDERR "-> zvol $path does not exist. creating it...\n";
                 system(@cmd) && die "ERROR: cannot create zvol '$path'\n";
-            };
+            }
         }
         return undef;
     }
@@ -128,10 +152,8 @@ sub blockSize {
     return sub {
         my $blkSize = shift;
 
-        my ($val, $suf) = $blkSize =~ /^(\d+)(k?)$/i
+        my $val = $calcBlkSize->($blkSize)
             or die "ERROR: block_size '$blkSize' not valid\n";
-
-        $val *= 1024 if $suf;
 
         $val >= 512
             or die "ERROR: block_size '$blkSize' not valid. Must be greater or equal than 512.\n";
