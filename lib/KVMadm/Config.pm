@@ -480,7 +480,7 @@ sub removeKVM {
     exists $opts->{zone} && $zoneState eq 'running'
         and die "ERROR: zone '$kvmName' still running. use 'kvmadm stop $kvmName' to stop it first...\n";
 
-    for (keys %$opts){
+    for (keys %$opts) {
         /^vnic$/ && do {
             $util->purgeVnic($config);
             next;
@@ -489,11 +489,11 @@ sub removeKVM {
             $util->purgeZvol($config);
             next;
         };
-        /^zone$/ && do {
-            $zoneState ne 'configured' && $self->{zone}->uninstallZone($kvmName);
-            $self->{zone}->deleteZone($kvmName);
-            next;
-        };
+    }
+    # purge zone last...
+    if (exists $opts->{zone}) {
+        $zoneState ne 'configured' && $self->{zone}->uninstallZone($kvmName);
+        $self->{zone}->deleteZone($kvmName);
     }
 
     # no need to delete the FMRI if zone has been purged
