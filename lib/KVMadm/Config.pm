@@ -10,7 +10,6 @@ use Illumos::Zones;
 use KVMadm::Utils;
 use KVMadm::Progress;
 use Data::Processor;
-use Data::Dumper;
 
 use FindBin;
 my ($BASEDIR)   = dirname($FindBin::RealBin);
@@ -673,7 +672,7 @@ sub getKVMCmdArray {
     push @cmdArray, '-enable-kvm';
     push @cmdArray, '-no-hpet' if !exists $config->{hpet} || $config->{hpet} !~ /^true$/i;
     push @cmdArray, ('-m', $config->{ram} // '1024');
-    push @cmdArray, ('-cpu', $config->{cpu_type} // 'host');
+    push @cmdArray, ('-cpu', $config->{cpu_type} // 'qemu64');
     push @cmdArray, ('-smp', $config->{vcpus} // '1');
     push @cmdArray, ('-rtc', 'base=' . ($config->{time_base} // 'utc') . ',driftfix=slew');
     push @cmdArray, ('-pidfile', "$RUN_PATH/$kvmName/$kvmName.pid");
