@@ -269,7 +269,7 @@ sub main {
                 
                 print "QEMU INFO $type:\n";
                 print join("\n", @{$mon->queryMonitor("$RUN_PATH/$kvmName/$kvmName.monitor", "info $type\n")});
-                print "\n\n";
+                print "\n";
             }
 
             last;
@@ -284,6 +284,15 @@ sub main {
             $smf->fmriOnline("$FMRI:$kvmName", { zonename => $config->{zone} ? $kvmName : undef,
                 zonepath => $config->{zone}->{zonepath} }) or die "ERROR: KVM instance '$kvmName' not online\n";
 
+            # qemu monitor command provided
+            @ARGV && do {
+                my $cmd = join ' ', @ARGV;
+                print join "\n", @{$mon->queryMonitor("$RUN_PATH/$kvmName/$kvmName.monitor", "$cmd\n")};
+                print "\n";
+
+                last;
+            };
+            # no qemu monitor command provided; enter monitor
             $mon->sockConn("$RUN_PATH/$kvmName/$kvmName.monitor");
 
             last;
@@ -360,7 +369,7 @@ where 'command' is one of the following:
 
     info [type,...] <kvm_name>
 
-    monitor <kvm_name>
+    monitor <kvm_name> [command]
 
     vnc <[bind_addr:]port> <kvm_name> 
 
@@ -498,7 +507,8 @@ type can be one of the following:
 
 =head2 B<monitor>
 
-connects to the qemu monitor of the running KVM instance
+connects to the qemu monitor of the running KVM instance. Sends B<command>
+to the qemu monitor if provided.
 
 =head2 B<vnc>
 
@@ -558,13 +568,17 @@ connect to the qemu monitor of the KVM instance with the name 'test-kvm'
 
     kvmadm monitor test-kvm
 
+set boot drive to d
+
+    kvmadm monitor test-kvm boot_set d
+
 forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP port 5900 
 
     kvmadm vnc 5900 test-kvm
 
 =head1 COPYRIGHT
 
-Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2017 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
