@@ -1,4 +1,4 @@
-Illumos::SMF@0.1.6
-Illumos::Zones@0.1.2
-Data::Processor@0.4.2
-JSON@2.90
+Illumos::SMF
+Illumos::Zones
+Data::Processor
+JSON
