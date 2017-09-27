@@ -1,3 +1,27 @@
+commit bb52d69753abd70f4513a80d32af4a5778631fbb
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Wed Sep 27 12:38:19 2017 +0200
+
+    commands can now be sent to qemu monitor
+
+commit 2b4f6a44c16744495c47e305850172ea6f9660e1
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Wed Aug 30 20:03:10 2017 +0200
+
+    default cpu to qemu64
+
+commit 70604e3a27924c3392468e7e40037efdf55420e5
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 23 02:29:53 2016 +0100
+
+    - purge zone last
+
+commit 813e662a9de91c62c5b4a9c250670986ff43dfee
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri May 6 13:49:19 2016 +0200
+
+    ready for 0.11.0
+
 commit abba6417912afc65c363b9d8147784f217115ca8
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Fri May 6 13:37:45 2016 +0200
