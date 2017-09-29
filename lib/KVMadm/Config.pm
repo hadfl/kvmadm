@@ -19,7 +19,7 @@ my $QEMU_KVM = '/usr/bin/qemu-system-x86_64';
 my $DLADM    = '/usr/sbin/dladm';
 my $FMRI     = 'svc:/system/kvm';
 my $PGRP     = 'kvmadm';
-my $RUN_PATH = "/var$BASEDIR/run";
+my $RUN_PATH = "/var$BASEDIR/run"; # RUNPATH
 my $VIRTIO_TXTIMER_DEFAULT = 200000;
 my $VIRTIO_TXBURST_DEFAULT = 128;
 
@@ -866,7 +866,7 @@ returns the pid of the qemu process
 
 =head1 COPYRIGHT
 
-Copyright (c) 2015 by OETIKER+PARTNER AG. All rights reserved.
+Copyright 2017 OmniOS Community Edition (OmniOSce) Association.
 
 =head1 LICENSE
 
