@@ -14,9 +14,6 @@
 
 @SET_MAKE@
 
-# Author: Tobi Oetiker <tobi@oetiker.ch>
-# License: Public Domain
-
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -100,8 +97,6 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-depcomp =
-am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
 am__can_run_installinfo = \
@@ -147,6 +142,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+CLASS_NAME = @CLASS_NAME@
 CURL = @CURL@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
@@ -165,7 +161,6 @@ LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-MISSING_PERL_MODULES = @MISSING_PERL_MODULES@
 MKDIR_P = @MKDIR_P@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -178,6 +173,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PERL5LIB = @PERL5LIB@
 POD2MAN = @POD2MAN@
+SCRIPT_NAME = @SCRIPT_NAME@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -228,7 +224,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-PM := $(shell find . -name "*.pm")
+PM := $(shell find . -type d -name ".??*" -prune -o -not -name ".*" -a -not -name "*~" -a -not -name "*.tmp" -a -not -name "Makefile*" -a -type f -print )
+EXTRA_DIST = $(PM)
 nobase_data_DATA = $(PM)
 all: all-am
 
@@ -242,9 +239,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps lib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign lib/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign --ignore-deps lib/Makefile
+	  $(AUTOMAKE) --foreign lib/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -441,8 +438,6 @@ uninstall-am: uninstall-nobase_dataDATA
 	mostlyclean-generic pdf pdf-am ps ps-am tags-am uninstall \
 	uninstall-am uninstall-nobase_dataDATA
 
-
-#END
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

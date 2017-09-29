@@ -14,8 +14,7 @@
 
 @SET_MAKE@
 
-# Author: Tobi Oetiker <tobi@oetiker.ch>
-# License: Public Domain
+#  Copyright (C) 2016 Tobias Oetiker
 
 
 VPATH = @srcdir@
@@ -138,8 +137,6 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-depcomp =
-am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -234,6 +231,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+CLASS_NAME = @CLASS_NAME@
 CURL = @CURL@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
@@ -252,7 +250,6 @@ LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-MISSING_PERL_MODULES = @MISSING_PERL_MODULES@
 MKDIR_P = @MKDIR_P@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -265,6 +262,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PERL5LIB = @PERL5LIB@
 POD2MAN = @POD2MAN@
+SCRIPT_NAME = @SCRIPT_NAME@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -285,7 +283,7 @@ am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
 builddir = @builddir@
-datadir = $(prefix)
+datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
@@ -316,17 +314,16 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-SUFFIXES = .1 .man .pm
 SUBDIRS = thirdparty lib
-BIN = bin/@PACKAGE@ bin/system-kvm
-PM := $(shell find lib/ -name "*.pm")
+BIN = bin/$(SCRIPT_NAME) bin/system-kvm
+MAN = man/$(SCRIPT_NAME).1
+POD = doc/$(SCRIPT_NAME).pod
 PROBES := $(shell find probes/ -name "*_probe")
-MAN = man/@PACKAGE@.1
-POD = doc/@PACKAGE@.pod
+
+#PERLTESTS := $(shell find t -name "*.t")
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
-GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(BIN) $(PM) \
-	$(GENERATED_EXTRADIST) smf/system-kvm.xml.in
+EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(BIN) $(MAN) \
+	smf/system-kvm.xml.in
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -338,22 +335,21 @@ dist_bin_SCRIPTS = $(BIN) $(PROBES)
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .1 .man .pm
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
-	      echo ' cd $(srcdir) && $(AUTOMAKE) --foreign --ignore-deps'; \
-	      $(am__cd) $(srcdir) && $(AUTOMAKE) --foreign --ignore-deps \
+	      echo ' cd $(srcdir) && $(AUTOMAKE) --foreign'; \
+	      $(am__cd) $(srcdir) && $(AUTOMAKE) --foreign \
 		&& exit 0; \
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign --ignore-deps Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign --ignore-deps Makefile
+	  $(AUTOMAKE) --foreign Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -881,14 +877,8 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	uninstall-svcDATA
 
 
-CHANGES:
-	git log --full-history --simplify-merges --dense --no-merges > CHANGES
-
-README.md COPYRIGHT: VERSION
-	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/[0-4]\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
-
-README: README.md
-	cp README.md README
+README.md COPYRIGHT : VERSION
+	$(PERL) -i -p -e 's/(#VERSION#|\d+\.\d+\.\d+(?:-\w+)?)/$(PACKAGE_VERSION)/g;s/(#YEAR#|20[1-4]\d)/$(YEAR)/g;s/(#DATE#|20[1-9]\d-[01]\d-[0-3]\d)/$(DATE)/g;' $@
 
 doc/%.pod: bin/% VERSION
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
@@ -896,19 +886,21 @@ doc/%.pod: bin/% VERSION
 man/%.1: bin/% VERSION
 	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
 
-dist-hook: $(POD)  $(MAN) CHANGES
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README.md $(distdir)/COPYRIGHT
+dist-hook: thirdparty
+	$(PERL) -i -p -e 's/^our\s+\$$VERSION\s*=\s*".+?";/our \$$VERSION = "$(PACKAGE_VERSION)";/;'  $(distdir)/lib/$(CLASS_NAME)/*.pm
+
+dist-hook: $(POD)
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:
-	[ "$(PERL5LIB)" = "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^use .*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
+	[ "$(PERL5LIB)" == "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
-	mkdir -p $(DESTDIR)$(libdir)
+	cd "$(DESTDIR)$(libdir)/KVMadm" && $(PERL) -i -p -e 's{^my .*# RUNPATH}{my \$$RUN_PATH = "$(localstatedir)/run"; # RUNPATH};' Config.pm
 	[ ! -d $(THIRDPARTY_DIR)/lib/perl5 ] || cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
 
-test:
-	$(PERL) -Ithirdparty/lib/perl5 "-MExtUtils::Command::MM" "-e" "test_harness(0, 'lib','thirdparty/lib/perl5')" t/*.t
+#test:
+#	$(PERL) "-MExtUtils::Command::MM" "-e" "test_harness(0, 'lib','thirdparty/lib/perl5')" t/*.t
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
