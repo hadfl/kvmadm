@@ -1,3 +1,21 @@
+commit 39317f513f779eba647c45f43908a1a7f5ba7183
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Fri Sep 29 20:16:08 2017 +0200
+
+    build system; rebrand
+
+commit 0c57fd47ef319d22879973ff90a058c5f4cde8e5
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Wed Sep 27 13:03:24 2017 +0200
+
+    .gitattributes added
+
+commit 06f5c5f37eb7e7fa56bf13865825edcca6491c5e
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Wed Sep 27 13:00:14 2017 +0200
+
+    ready for 0.12.0
+
 commit bb52d69753abd70f4513a80d32af4a5778631fbb
 Author: Dominik Hassler <hadfl@omniosce.org>
 Date:   Wed Sep 27 12:38:19 2017 +0200

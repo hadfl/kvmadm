@@ -239,7 +239,7 @@ forward the vnc socket of the KVM instance with the name 'test-kvm' to the TCP p
 
 =head1 COPYRIGHT
 
-Copyright (c) 2017 by OETIKER+PARTNER AG. All rights reserved.
+Copyright 2017 OmniOS Community Edition (OmniOSce) Association.
 
 =head1 LICENSE
 
