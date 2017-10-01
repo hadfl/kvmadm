@@ -355,10 +355,13 @@ my $getOwnResources = sub {
     # make a copy, not to modify global $RESOURCES
     my $res = { map { $_ => [ @{$RESOURCES->{$_}} ] } keys %$RESOURCES };
 
+    # fs resources don't like double forward slashes, remove them
+    my $dir = "$RUN_PATH/$kvmName";
+    $dir =~ s|//|/|g;
     # add run path
     push @{$res->{fs}}, {
-        dir     => "$RUN_PATH/$kvmName",
-        special => "$RUN_PATH/$kvmName",
+        dir     => $dir,
+        special => $dir,
         type    => 'lofs',
         options => '[nodevices]',
     };
@@ -366,6 +369,8 @@ my $getOwnResources = sub {
     for my $disk (@{$cfg->{disk}}) {
         my $path = $disk->{disk_path};
         $path =~ s|^/dev/zvol/rdsk/||;
+        # fs resources don't like double forward slashes, remove them
+        $path =~ s|//|/|g;
 
         if ($disk->{media} && $disk->{media} eq 'cdrom') {
             push @{$res->{fs}}, {
