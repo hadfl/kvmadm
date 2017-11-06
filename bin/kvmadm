@@ -415,6 +415,7 @@ for each disk the following properties can be set:
  optional
      boot
      media
+     serial
      disk_size
      block_size
      cache

@@ -189,6 +189,12 @@ my $SCHEMA = sub {
                 example     => '"index" : "0"',
                 validator   => $sv->regexp(qr/^\d+$/),
             },
+            serial  => {
+                optional    => 1,
+                description => 'serial number of disk, upper-case alpha-numeric, up to 20 characters',
+                example     => '"serial" : "XYZ123"',
+                validator   => $sv->regexp(qr/^[\d[:upper:]]{1,20}$/),
+            },
             boot    => {
                 optional    => 1,
                 description => 'set disk as boot device',
@@ -709,6 +715,7 @@ sub getKVMCmdArray {
             . ',if='    . ($disk->{model} // 'ide')
             . ',media=' . ($disk->{media} // 'disk')
             . ',index=' . $disk->{index}
+            . ',serial=' . ($disk->{serial} // $disk->{index})
             . ',cache=' . ($disk->{cache} // 'none')
             . ($disk->{boot} && $disk->{boot} eq 'true' ? ',boot=on' : ''));
     }
