@@ -193,7 +193,7 @@ my $SCHEMA = sub {
                 optional    => 1,
                 description => 'serial number of disk, upper-case alpha-numeric, up to 20 characters',
                 example     => '"serial" : "XYZ123"',
-                validator   => $sv->regexp(qr/^[\d[:upper:]]{1,20}$/),
+                validator   => $sv->regexp(qr/^[\dA-Z]{1,20}$/),
             },
             boot    => {
                 optional    => 1,
@@ -711,12 +711,12 @@ sub getKVMCmdArray {
                 && $disk->{disk_path} !~ m|^/dev/zvol/rdsk/|;
 
         push @cmdArray, ('-drive',
-              'file='   . $disk->{disk_path}
-            . ',if='    . ($disk->{model} // 'ide')
-            . ',media=' . ($disk->{media} // 'disk')
-            . ',index=' . $disk->{index}
+              'file='    . $disk->{disk_path}
+            . ',if='     . ($disk->{model} // 'ide')
+            . ',media='  . ($disk->{media} // 'disk')
+            . ',index='  . $disk->{index}
             . ',serial=' . ($disk->{serial} // $disk->{index})
-            . ',cache=' . ($disk->{cache} // 'none')
+            . ',cache='  . ($disk->{cache} // 'none')
             . ($disk->{boot} && $disk->{boot} eq 'true' ? ',boot=on' : ''));
     }
     push @cmdArray, ('-boot', 'order=' . ($config->{boot_order} ? $config->{boot_order} : 'cd'));
