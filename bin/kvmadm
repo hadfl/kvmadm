@@ -117,7 +117,7 @@ sub main {
             last; 
         };
         /^import$/ && do {
-            my $fileName = shift @ARGV;
+            my $fileName = shift @ARGV or pod2usage(1);
 
             open my $fh, '<', $fileName or die 'ERROR: open file ' . $fileName . ":$!\n";
             my $configJSON = do { local $/; <$fh>; };
