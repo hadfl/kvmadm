@@ -609,7 +609,7 @@ sub readConfig {
        delete $config->{zone};
        $zone = {};
        $self->{smf}->fmriExists("$FMRI:$kvmName");
-    } or die "ERROR: KVM instance '$kvmName' does not exist\n";
+    } or die "ERROR: KVM instance '$kvmName' does not exist.\n";
             
     $properties = $self->{smf}->getProperties("$FMRI:$kvmName", $PGRP,
         $insertZone->($kvmName, %$zone));
@@ -653,7 +653,7 @@ sub listKVM {
         $fmris = [ "$FMRI:$kvmName" ];
     }
     else {
-        my $zones = $self->{zone}->listZones;
+        my $zones = $self->{zone}->listZones({ brandFilter => qr/^(?!lx$)/, requireSMF => 1 });
         for my $zone (@$zones) {
             push @$fmris, @{$self->{smf}->listFMRI($FMRI, { zonename => $zone->{zonename} ne 'global'
                 ? $zone->{zonename} : undef, instancesonly => 1 })};
