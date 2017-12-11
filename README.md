@@ -1,4 +1,4 @@
-kvmadm 0.12.1
+kvmadm 0.12.2
 ============
 Manage KVM instances under SMF control
 
@@ -17,10 +17,10 @@ Setup
 It is advised to install kvmadm into a separate directory as the base directory of `kvmadm` will be mounted in the zones.
 
 ```sh
-wget https://github.com/hadfl/kvmadm/releases/download/v0.12.1/kvmadm-0.12.1.tar.gz
-tar zxvf kvmadm-0.12.1.tar.gz
-cd kvmadm-0.12.1
-./configure --prefix=/opt/kvmadm-0.12.1 
+wget https://github.com/hadfl/kvmadm/releases/download/v0.12.2/kvmadm-0.12.2.tar.gz
+tar zxvf kvmadm-0.12.2.tar.gz
+cd kvmadm-0.12.2
+./configure --prefix=/opt/kvmadm-0.12.2 
 ```
 
 Now you can run
@@ -45,4 +45,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2017-09-30
+2017-12-11

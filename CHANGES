@@ -1,3 +1,39 @@
+commit d55f587b6b8aa23be09881f1528fd307066888db
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Mon Dec 11 15:36:03 2017 +0100
+
+    smf filter added
+
+commit 4a8095c1a0476ce9b5beb8283712cc3b448c00a2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 8 14:58:52 2017 +0100
+
+    check for missing argument
+
+commit 43eb4ff0a35ea31d44bf559fb2c5b022be224db8
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Tue Nov 7 11:51:14 2017 +0100
+
+    cleanup
+
+commit 9a68cc983cf406c54ced46e0611997ba9d9e57e0
+Author: Andy Fiddaman <omnios@citrus-it.co.uk>
+Date:   Mon Nov 6 19:15:43 2017 +0000
+
+    Add serial number configuration for drives
+
+commit 2e6822a5e6bc7f067bd8fc6f5154562bf306a0f4
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Sun Oct 1 14:43:33 2017 +0200
+
+    double forward slashes fix for fs resources
+
+commit ec88bf956db366084ef46b3a9a495f5729bc88b9
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Sat Sep 30 16:49:40 2017 +0200
+
+    ready for 0.12.1
+
 commit 39317f513f779eba647c45f43908a1a7f5ba7183
 Author: Dominik Hassler <hadfl@omniosce.org>
 Date:   Fri Sep 29 20:16:08 2017 +0200
