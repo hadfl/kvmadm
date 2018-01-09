@@ -581,7 +581,7 @@ sub writeConfig {
 
     # write section configs
     for my $section (@{$SECTIONS->()}) {
-        $self->$writeArray($kvmName, $section, $config->{$section}, $config);
+        $self->$writeArray($kvmName, $section, $config->{$section}, $zConf);
         delete $config->{$section};
     }
 
