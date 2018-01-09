@@ -1,3 +1,17 @@
+commit bb60e508f176e13c9761be3d609f9281e2bb0ca3
+Author: Andy Fiddaman <omnios@citrus-it.co.uk>
+Date:   Tue Jan 9 10:31:35 2018 +0000
+
+    Wrong object being passed to writeArray
+    
+    The config hash is passed instead of $zConf, causing writeArray to consider everything as a zone.
+
+commit bc61fafb34c8b187935e71bee8089d53ede4f433
+Author: Dominik Hassler <hadfl@omniosce.org>
+Date:   Mon Dec 11 18:08:45 2017 +0100
+
+    ready for 0.12.2
+
 commit d55f587b6b8aa23be09881f1528fd307066888db
 Author: Dominik Hassler <hadfl@omniosce.org>
 Date:   Mon Dec 11 15:36:03 2017 +0100
