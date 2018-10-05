@@ -193,7 +193,7 @@ my $SCHEMA = sub {
                 optional    => 1,
                 description => 'serial number of disk, upper-case alpha-numeric, up to 20 characters',
                 example     => '"serial" : "XYZ123"',
-                validator   => $sv->regexp(qr/^[\dA-Z]{1,20}$/),
+                validator   => $sv->regexp(qr/^[\dA-Z-]{1,20}$/),
             },
             boot    => {
                 optional    => 1,
