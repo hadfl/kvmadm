@@ -5,6 +5,12 @@ Manage KVM instances under SMF control
 [![Build Status](https://travis-ci.org/hadfl/kvmadm.svg?branch=master)](https://travis-ci.org/hadfl/kvmadm)
 [![Coverage Status](https://img.shields.io/coveralls/hadfl/kvmadm.svg)](https://coveralls.io/r/hadfl/kvmadm?branch=master)
 
+---
+
+## This project is unmaintained and has been superseded by [zadm](https://github.com/omniosorg/zadm).
+
+---
+
 `kvmadm` takes care of setting up kvm instances on illumos derived operating
 systems with SMF support. The kvm hosts run under smf control. Each host
 will show up as a separate SMF service instance. `kvmadm` supports KVM instances
